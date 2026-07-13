@@ -150,6 +150,21 @@
   .chip:hover{border-color:var(--amber-dim);color:var(--amber)}
   .chip.on{background:var(--amber);color:#101418;border-color:var(--amber);font-weight:700}
 
+  /* ---------- Feld-HUD (beim GPS-Tracking) ---------- */
+  #hud{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:850;
+    display:none;gap:6px}
+  #hud .chip2{background:rgba(13,17,22,.92);border:1px solid var(--line);border-radius:3px;
+    padding:5px 10px;font-size:11px;color:var(--ink);white-space:nowrap}
+  #hud .chip2 b{color:var(--amber);font-weight:600}
+  @media (max-width:820px){ #hud{top:8px} #hud .chip2{font-size:12px;padding:6px 10px} }
+
+  /* ---------- Foto-Marker (Fundkarte wie GO TERRAIN) ---------- */
+  .pmark{width:46px;height:46px;background:#fff;border:2px solid #fff;border-radius:4px;
+    box-shadow:0 2px 8px rgba(0,0,0,.55);overflow:hidden;position:relative}
+  .pmark img{width:100%;height:100%;object-fit:cover;display:block}
+  .pmark::after{content:'';position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:#fff}
+
   /* ---------- Fund-Formular ---------- */
   #findForm{position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.55);display:none;
     align-items:flex-end;justify-content:center}
@@ -443,6 +458,11 @@
     <div id="blinkflag">RELIEF AUS</div>
     <div id="drawctl"><span id="drawinfo"></span>
       <button id="drawDone">Fertig</button><button id="drawCancel">Abbrechen</button></div>
+    <div id="hud">
+      <span class="chip2">⏱ <b id="hudTime">0:00</b></span>
+      <span class="chip2">🥾 <b id="hudDist">0 m</b></span>
+      <span class="chip2">± <b id="hudAcc">–</b></span>
+    </div>
     <div id="fabs">
       <button class="fab small" id="helpBtn" title="Hilfe-Modus: antippen, danach auf ein beliebiges Element tippen — du bekommst eine Erklärung statt der Aktion.">?</button>
       <button class="fab" id="fabLoc" title="GPS starten">⌖</button>
@@ -455,6 +475,7 @@
 <div id="findForm">
   <div class="ff">
     <b>Fund speichern</b>
+    <small id="ffCoords" style="display:block;color:var(--ink-dim);font-size:10px;margin-top:4px"></small>
     <label class="f">Notiz</label>
     <input type="text" id="ffNote" placeholder="z. B. Münze, Knopf, Hufeisen …">
     <div class="cols">
@@ -779,10 +800,19 @@ const persist = f => idbPut({ id:f.id, lat:f.lat, lng:f.lng, note:f.note, kind:f
                        .catch(e => console.warn('IDB put', e));
 
 function markerFor(f){
-  const col = (KINDS[f.kind]||KINDS.fund).color;
-  const m = L.circleMarker([f.lat,f.lng],
-    { radius:6, color:col, weight:2, fillColor:col, fillOpacity:.85 }).addTo(map);
-  const k = (KINDS[f.kind]||KINDS.fund);
+  const k = (KINDS[f.kind]||KINDS.fund), col = k.color;
+  let m;
+  if (f.photo){
+    // Fundkarte: das Foto selbst ist der Pin (Rahmen in Kategorie-Farbe)
+    if (f._iconUrl) URL.revokeObjectURL(f._iconUrl);
+    f._iconUrl = URL.createObjectURL(f.photo);
+    m = L.marker([f.lat,f.lng], { icon: L.divIcon({
+      className:'', html:`<div class="pmark" style="border-color:${col}"><img src="${f._iconUrl}" alt=""></div>`,
+      iconSize:[46,46], iconAnchor:[23,54], popupAnchor:[0,-52] }) }).addTo(map);
+  } else {
+    m = L.circleMarker([f.lat,f.lng],
+      { radius:6, color:col, weight:2, fillColor:col, fillOpacity:.85 }).addTo(map);
+  }
   const meta = [f.leitwert ? 'Leitwert ' + esc(f.leitwert) : '', f.tiefe != null ? f.tiefe + ' cm tief' : '']
     .filter(Boolean).join(' · ');
   m.bindPopup(`<b>${esc(f.note||k.label)}</b><br>`
@@ -814,6 +844,7 @@ async function checkFindSafety(f){
     const list = await (await fetch(`${DENKMAL_API}/preview/bykoord/${x.toFixed(1)}/${y.toFixed(1)}?buffer=${NAEHE}&limit=50`)).json();
     const boden = (Array.isArray(list)?list:[]).filter(m=>m.objtyp==='boden').sort((a,b)=>a.distance-b.distance)[0];
     if (!boden) return;
+    if (!state.finds.includes(f)) return;   // Fund wurde inzwischen gelöscht — nicht wiederbeleben
     f.ddist = Math.round(boden.distance);
     f.dstate = boden.distance < 50 ? 'innerhalb' : 'naehe';
     await persist(f);
@@ -860,6 +891,7 @@ function renderFinds(){
     el.querySelector('[data-a="del"]').onclick   = async () => {
       if (!confirm('Diesen Fund löschen?')) return;
       map.removeLayer(f._m); if (f._url) URL.revokeObjectURL(f._url);
+      if (f._iconUrl) URL.revokeObjectURL(f._iconUrl);
       state.finds.splice(i,1);
       try { await idbDel(f.id); } catch(e){}
       renderFinds();
@@ -883,6 +915,8 @@ document.getElementById('photoIn').onchange = async e => {
   if (!f) return;
   f.photo = file;
   try { await persist(f); } catch(err){ alert('Foto konnte nicht gespeichert werden: '+err.message); }
+  if (f._m) map.removeLayer(f._m);
+  f._m = markerFor(f);                 // Marker wird zum Foto-Pin
   renderFinds();
 };
 
@@ -896,7 +930,19 @@ document.getElementById('photoModal').onclick = function(){
 };
 
 /* --- Live-GPS (wie Google Maps: blauer Punkt, folgt der Position) --- */
-const gps = { watch:null, follow:false, marker:null, circle:null, last:null, acc:null };
+const gps = { watch:null, follow:false, marker:null, circle:null, last:null, acc:null,
+              startTs:null, sessionIdx:0, hudIv:null };
+
+/* Feld-HUD: Zeit · Strecke · Genauigkeit (sichtbar solange GPS läuft) */
+function hudShow(on){ document.getElementById('hud').style.display = on ? 'flex' : 'none'; }
+function fmtDur(s){
+  const h = Math.floor(s/3600), m = Math.floor(s/60) % 60, ss = s % 60;
+  return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(ss).padStart(2,'0');
+}
+function hudTick(){
+  if (gps.startTs) document.getElementById('hudTime').textContent =
+    fmtDur(Math.round((Date.now() - gps.startTs) / 1000));
+}
 
 function gpsHttpsHint(){
   return (location.protocol === 'http:' && !/^(localhost|127\.)/.test(location.hostname))
@@ -919,6 +965,10 @@ function gpsUpdate(pos){
   if (gps.follow) map.setView([la,lo], Math.max(map.getZoom(), 16), { animate:false });
   trackAdd(la, lo);
   zoneCheck(la, lo);
+  document.getElementById('hudAcc').textContent = Math.round(ac) + ' m';
+  const sess = track.pts.slice(gps.sessionIdx);
+  document.getElementById('hudDist').textContent =
+    sess.length > 1 ? fmtLen(lineLength(sess.map(p => L.latLng(p)))) : '0 m';
   fabState();
 }
 
@@ -965,6 +1015,11 @@ document.getElementById('tTrackClear').onclick = () => {
 let ffPos = null;
 function openFindForm(lat, lng){
   ffPos = [lat, lng];
+  try {
+    const [E, N] = UTM.fwd(lat, lng);
+    document.getElementById('ffCoords').textContent =
+      `${lat.toFixed(6)}° N, ${lng.toFixed(6)}° O · UTM 32U ${Math.round(E)} ${Math.round(N)}`;
+  } catch(e){ document.getElementById('ffCoords').textContent = ''; }
   document.getElementById('ffNote').value = '';
   document.getElementById('ffLeit').value = '';
   document.getElementById('ffTiefe').value = '';
@@ -1076,6 +1131,10 @@ function gpsError(err){
 function gpsStart(){
   if (!navigator.geolocation) return alert('Geolocation ist in diesem Browser nicht verfügbar.' + gpsHttpsHint());
   gps.follow = true;                       // VOR watchPosition — erstes Update kann sofort kommen
+  gps.startTs = Date.now();
+  gps.sessionIdx = track.pts.length;       // Strecke zählt ab jetzt
+  hudShow(true); hudTick();
+  gps.hudIv = setInterval(hudTick, 1000);
   gps.watch = navigator.geolocation.watchPosition(gpsUpdate, gpsError,
     { enableHighAccuracy:true, maximumAge:2000, timeout:15000 });
   wakeOn();                                // Bildschirm anlassen → Tracking reißt nicht ab
@@ -1085,7 +1144,9 @@ function gpsStop(){
   if (gps.watch != null && navigator.geolocation) navigator.geolocation.clearWatch(gps.watch);
   gps.watch = null; gps.follow = false;
   if (gps.marker){ map.removeLayer(gps.marker); map.removeLayer(gps.circle); gps.marker = gps.circle = null; }
-  gps.last = null;
+  gps.last = null; gps.startTs = null;
+  clearInterval(gps.hudIv); gps.hudIv = null;
+  hudShow(false);
   wakeOff();
   fabState();
 }
