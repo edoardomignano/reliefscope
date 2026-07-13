@@ -150,6 +150,15 @@
   .chip:hover{border-color:var(--amber-dim);color:var(--amber)}
   .chip.on{background:var(--amber);color:#101418;border-color:var(--amber);font-weight:700}
 
+  /* ---------- Hilfe-Modus ---------- */
+  .fab.small{width:34px;height:34px;font-size:15px;font-weight:700}
+  #helpBtn.onhelp{background:var(--amber);color:#101418;border-color:var(--amber)}
+  #helpToast{position:fixed;left:50%;transform:translateX(-50%);bottom:76px;z-index:3000;
+    display:none;max-width:min(520px,92vw);background:var(--panel);border:1px solid var(--amber-dim);
+    border-left:3px solid var(--amber);border-radius:4px;padding:10px 12px;font-size:12px;
+    line-height:1.55;color:var(--ink);box-shadow:0 4px 24px rgba(0,0,0,.6)}
+  @media (max-width:820px){ #helpToast{bottom:110px} }
+
   /* ---------- Tab-Leiste (nur mobil) ---------- */
   #tabs{display:none;flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel-2)}
   #tabs button{flex:1;background:none;border:none;color:var(--ink-dim);font-family:var(--mono);
@@ -245,7 +254,7 @@
         <div id="layers"></div>
         <details class="help"><summary>Hilfe zu Denkmal-Kategorien</summary>
         <p class="hint">Denkmäler kommen in vier Kategorien vom BLfD (Boden-, Bau-, Ensemble-, landschaftsprägende Denkmäler) — alle vier sind an, damit kein eingetragenes Denkmal versteckt wird. Nur Bodendenkmäler betreffen das Sondenverbot; ein Baudenkmal wie das Festspielhaus steht unter „Baudenkmäler". Kein sichtbares Denkmal heißt NICHT „frei" — es sind nur die eingetragenen, der Stand ist von heute.</p>
-        <p class="hint">Roter Punkt = Kacheln laden nicht. Dann Zahnrad öffnen, Capabilities aufrufen und den echten Layer-Namen eintragen.</p>
+        <p class="hint">Roter Punkt = Kacheln laden nicht — meist fehlt Internet oder der Bayern-Dienst ist kurz gestört; einfach später nochmal. Die technischen Layer-Adressen sind fest eingestellt und lassen sich nur im Experten-Modus ändern (Mehr → App &amp; Einstellungen).</p>
         </details>
       </div>
 
@@ -322,6 +331,37 @@
       </div>
 
       <div class="sec" data-tab="mehr">
+        <h2>Kurzanleitung</h2>
+        <p class="hint"><b>?</b>-Knopf auf der Karte antippen, dann auf ein beliebiges Element tippen — du bekommst eine Erklärung statt der Aktion. Am PC reicht es, mit der Maus auf einem Knopf zu bleiben.</p>
+        <details class="help"><summary>Erste Schritte (5 Punkte)</summary>
+        <p class="hint">
+        1 · <b>Karte</b>: Ort suchen, Ansicht per Chip wählen (🥾 Feld unterwegs, 🔍 Recherche am PC).<br>
+        2 · <b>Prüfen</b>: „Ort antippen &amp; prüfen" → Ampel + Geschichte der Umgebung in einem.<br>
+        3 · <b>Genehmigung</b> einholen (unter „Mehr") — ohne Erlaubnis des Eigentümers kein Graben.<br>
+        4 · <b>Im Feld</b>: ⌖ GPS folgen, ＋ setzt einen Fund an deiner Position (Foto direkt dazu).<br>
+        5 · <b>Funde</b>: Sammlung ansehen, 🧭 öffnet die Route in Google Maps, „Sammlung sichern" = Backup.
+        </p></details>
+      </div>
+
+      <div class="sec" data-tab="mehr">
+        <h2>App &amp; Einstellungen</h2>
+        <button class="b" id="installBtn" style="display:none">📲 Als App installieren</button>
+        <p class="hint" id="installHint"></p>
+        <div class="layer"><div class="top">
+          <span class="name">Experten-Modus</span>
+          <input type="checkbox" id="expertChk" title="Zeigt in den Ebenen-Einstellungen die WMS-Adressen und Layer-Namen zum Bearbeiten. Nur anschalten, wenn du weißt, was du tust — falsche Werte lassen Ebenen leer erscheinen.">
+        </div></div>
+        <details class="help"><summary>Was ist der Experten-Modus?</summary>
+        <p class="hint">Schaltet in den Kartenebenen die technischen Felder frei (WMS-Adresse, Layer-Name). Normal brauchst du das nie — die Adressen sind fest eingestellt und geprüft. Geht etwas schief: „Zurücksetzen" stellt alles wieder her.</p>
+        </details>
+        <button class="b" id="bReset">Karten-Setup zurücksetzen</button>
+        <div class="row2">
+          <button class="b" id="eCfg">Karten-Setup sichern</button>
+          <button class="b" id="iCfg">Setup laden</button>
+        </div>
+      </div>
+
+      <div class="sec" data-tab="mehr">
         <h2>Genehmigung einholen</h2>
         <details class="help"><summary>Warum &amp; wie?</summary>
         <p class="hint">Suchen ohne Erlaubnis von Eigentümer/Pächter ist Sachbeschädigung. Schalte den <b>Flurstücke</b>-Layer an, um die Parzelle abzulesen. Den <b>Eigentümernamen</b> gibt kein offener Dienst her (Datenschutz) — er kommt per Antrag beim <b>ADBV</b> (Amt für Digitalisierung, Breitband und Vermessung) mit berechtigtem Interesse, oder frag Gemeinde/ortsansässige Landwirte.</p>
@@ -350,10 +390,6 @@
           <button class="b" id="eBak">Sammlung sichern</button>
           <button class="b" id="iBak">Sammlung laden</button>
         </div>
-        <div class="row2">
-          <button class="b" id="eCfg">Layer-Setup sichern</button>
-          <button class="b" id="iCfg">Setup laden</button>
-        </div>
         <input type="file" id="fIn" accept=".json" style="display:none">
         <input type="file" id="bIn" accept=".json" style="display:none">
         <input type="file" id="photoIn" accept="image/*" capture="environment" style="display:none">
@@ -381,12 +417,14 @@
     <div id="drawctl"><span id="drawinfo"></span>
       <button id="drawDone">Fertig</button><button id="drawCancel">Abbrechen</button></div>
     <div id="fabs">
+      <button class="fab small" id="helpBtn" title="Hilfe-Modus: antippen, danach auf ein beliebiges Element tippen — du bekommst eine Erklärung statt der Aktion.">?</button>
       <button class="fab" id="fabLoc" title="GPS starten">⌖</button>
       <button class="fab" id="fabFind" title="Fund an meiner Position">＋</button>
     </div>
   </div>
 </div>
 <div id="photoModal"><img alt="Fundfoto"></div>
+<div id="helpToast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -520,27 +558,29 @@ function renderLayers(){
       ? cfg.url + (cfg.url.includes('?') ? '' : '?') + 'SERVICE=WMS&REQUEST=GetCapabilities'
       : null;
 
+    const expert = isExpert();
     el.innerHTML = `
       <div class="top">
-        <span class="dot" data-dot="${cfg.id}"></span>
-        <span class="name">${cfg.name}</span>
-        <input type="checkbox" ${cfg.on ? 'checked' : ''} data-on="${cfg.id}">
-        ${cfg.type === 'wms' ? `<button class="gear" title="Einstellungen">⚙</button>` : ''}
+        <span class="dot" data-dot="${cfg.id}" title="Status: grün = Kacheln laden, rot = Ladefehler (meist kein Internet oder Dienst kurz gestört)"></span>
+        <span class="name" title="${esc(cfg.note ? cfg.note.split('.')[0]+'.' : cfg.name)}">${cfg.name}</span>
+        <input type="checkbox" ${cfg.on ? 'checked' : ''} data-on="${cfg.id}" title="Ebene ein-/ausblenden">
+        <button class="gear" title="Deckkraft & Infos zu dieser Ebene">⚙</button>
       </div>
       <div class="body">
         ${cfg.note ? `<p class="hint" style="margin-bottom:6px">${cfg.note}</p>` : ''}
-        <label class="f">WMS-Adresse</label>
-        <input type="text" value="${cfg.url}" data-url="${cfg.id}" placeholder="https://…">
-        <label class="f">Layer-Name</label>
-        <input type="text" value="${cfg.layers || ''}" data-lyr="${cfg.id}" placeholder="z. B. by_relief">
         <label class="f">Deckkraft</label>
-        <input type="range" min="0" max="100" value="${Math.round(cfg.opacity*100)}" data-op="${cfg.id}">
-        ${capsUrl ? `<a class="caps" href="${capsUrl}" target="_blank" rel="noopener">Capabilities öffnen →</a>` : ''}
+        <input type="range" min="0" max="100" value="${Math.round(cfg.opacity*100)}" data-op="${cfg.id}" title="Durchsichtigkeit — zum Überblenden mit der Ebene darunter">
+        ${expert && cfg.type === 'wms' ? `
+        <label class="f">WMS-Adresse (Experte)</label>
+        <input type="text" value="${cfg.url}" data-url="${cfg.id}" placeholder="https://…">
+        <label class="f">Layer-Name (Experte)</label>
+        <input type="text" value="${cfg.layers || ''}" data-lyr="${cfg.id}" placeholder="z. B. by_relief_kombiniert">
+        ${capsUrl ? `<a class="caps" href="${capsUrl}" target="_blank" rel="noopener">Capabilities öffnen →</a>` : ''}` : ''}
       </div>`;
 
     const gear = el.querySelector('.gear');
     if (gear) gear.onclick = () => el.classList.toggle('open');
-    if (cfg.type === 'wms' && (!cfg.url || !cfg.layers)) el.classList.add('open');
+    if (expert && cfg.type === 'wms' && (!cfg.url || !cfg.layers)) el.classList.add('open');
 
     el.querySelector(`[data-on="${cfg.id}"]`).onchange = e => {
       cfg.on = e.target.checked; mount(cfg);
@@ -750,10 +790,10 @@ function renderFinds(){
         <small>${f.lat.toFixed(5)}, ${f.lng.toFixed(5)} · ${f.ts.slice(0,10)}</small>
         ${f.dstate ? `<small style="color:#d1483c">⚠ ${f.dstate==='innerhalb'?'Im Bodendenkmal — Sonden verboten':'Nähebereich: Bodendenkmal in '+f.ddist+' m'}</small>` : ''}
         <div class="acts">
-          <button data-a="go">Karte</button>
-          <a href="${gmapsUrl(f)}" target="_blank" rel="noopener">🧭 Route</a>
-          <button data-a="photo">📷 Foto</button>
-          <button data-a="del">Löschen</button>
+          <button data-a="go" title="Diesen Fund auf der Karte anzeigen">Karte</button>
+          <a href="${gmapsUrl(f)}" target="_blank" rel="noopener" title="Route zu diesem Fund in Google Maps öffnen (Navigation)">🧭 Route</a>
+          <button data-a="photo" title="Foto aufnehmen oder aus der Galerie wählen">📷 Foto</button>
+          <button data-a="del" title="Diesen Fund endgültig löschen">Löschen</button>
         </div>
       </div>`;
     el.querySelector('.thumb').onclick = () => f.photo ? openPhoto(f._url) : pickPhoto(f.id);
@@ -1106,7 +1146,7 @@ function renderStructures(){
       <span class="badge" style="background:${t.c}">${t.l}</span>
       <div class="note">${s.note?esc(s.note):'<i style="color:var(--ink-dim)">ohne Notiz</i>'}</div>
       <small>${s.geom==='area'?'Fläche':'Linie'} · ${len} · ${s.ts.slice(0,10)}</small>
-      <div class="acts"><button data-a="go">Karte</button><button data-a="del">Löschen</button></div>
+      <div class="acts"><button data-a="go" title="Diese Struktur auf der Karte anzeigen">Karte</button><button data-a="del" title="Diese Struktur endgültig löschen">Löschen</button></div>
     </div>`;
     el.querySelector('[data-a="go"]').onclick = () => { map.fitBounds(s._l.getBounds(),{maxZoom:17}); s._l.openPopup(); };
     el.querySelector('[data-a="del"]').onclick = async () => {
@@ -1256,8 +1296,8 @@ async function checkHistory(lat, lng){
         </div>
         <div class="hsub">${esc(m.funktion||'')}${m.aktennummer?' · Akte '+esc(m.aktennummer):''}</div>
         <div class="hacts">
-          <button data-a="desc">Beschreibung</button>
-          <button data-a="show">⌖ auf Karte</button>
+          <button data-a="desc" title="Amtliche Beschreibung des BLfD laden (was war hier, welche Zeit)">Beschreibung</button>
+          <button data-a="show" title="Dieses Denkmal auf der Karte zeigen">⌖ auf Karte</button>
         </div>
         <div class="hdesc"></div>`;
       const [la,lo] = UTM.inv(m.east_utm, m.north_utm);
@@ -1364,12 +1404,118 @@ ${me.split(',')[0] || me}`;
   dl('antrag-adbv-eigentuemerauskunft.txt', txt, 'text/plain;charset=utf-8');
 };
 
-/* ---------------- Start ---------------- */
-renderLayers();
-CONFIG.layers.forEach(mount);
-loadFinds();
-loadStructures();
-trackLoad();
+/* ---------------- Einstellungen: Experten-Modus, Reset, Installation ---------------- */
+const isExpert = () => { try { return localStorage.getItem('rs_expert') === '1'; } catch(e){ return false; } };
+document.getElementById('expertChk').checked = isExpert();
+document.getElementById('expertChk').onchange = e => {
+  try { e.target.checked ? localStorage.setItem('rs_expert','1') : localStorage.removeItem('rs_expert'); } catch(err){}
+  renderLayers();
+};
+document.getElementById('bReset').onclick = () => {
+  if (!confirm('Karten-Setup zurücksetzen? (Deine Funde, Strukturen und die Spur bleiben erhalten.)')) return;
+  try { localStorage.removeItem('rs_preset'); localStorage.removeItem('rs_expert'); } catch(e){}
+  location.reload();
+};
+
+/* Als App installieren (Android zeigt einen Knopf, iOS geht über Safari-Teilen) */
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredInstall = e;
+  document.getElementById('installBtn').style.display = 'block';
+});
+document.getElementById('installBtn').onclick = async () => {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  try { await deferredInstall.userChoice; } catch(e){}
+  deferredInstall = null;
+  document.getElementById('installBtn').style.display = 'none';
+};
+(function installHint(){
+  const el = document.getElementById('installHint');
+  if (matchMedia('(display-mode: standalone)').matches || navigator.standalone){
+    el.textContent = '✓ Läuft bereits als installierte App.'; return;
+  }
+  el.innerHTML = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    ? 'iPhone/iPad: Diese Seite in <b>Safari</b> öffnen → Teilen-Symbol → <b>„Zum Home-Bildschirm"</b>. Danach startet ReliefScope wie eine App — im Feld auch offline.'
+    : 'Android: Chrome-Menü (⋮) → <b>„App installieren"</b> bzw. „Zum Startbildschirm hinzufügen" — oder den 📲-Knopf oben, sobald er erscheint. Danach läuft ReliefScope wie eine App, offline inklusive.';
+})();
+
+/* ---------------- Hilfe: Tooltips (Maus drauf bleiben) + ?-Modus (Finger) ---------------- */
+const HELP = {
+  q:'Ortssuche — Stadt, Dorf oder Adresse eintippen und Enter drücken. Treffer antippen: die Karte springt dorthin.',
+  tLoc:'GPS an/aus. Die Karte folgt deiner Position wie bei Google Maps; Karte ziehen pausiert das Folgen.',
+  tTrackGpx:'Deine aufgezeichnete Lauf-Spur als GPX-Datei speichern (für QGIS oder Karten-Apps).',
+  tTrackClear:'Löscht die aufgezeichnete Spur unwiderruflich.',
+  findKind:'Kategorie für neue Marker: Fund = etwas gefunden · Beobachtung = etwas Auffälliges · Strukturverdacht = mögliche alte Struktur im Gelände.',
+  tPoint:'Werkzeug: danach auf die Karte tippen — dort wird ein Fund-Marker gesetzt. Die App prüft automatisch den Abstand zu Bodendenkmälern und warnt.',
+  tBuf:'Werkzeug: danach auf die Karte tippen — zeichnet einen Abstandsring (z. B. um zu sehen, wie weit 300 m Nähebereich reichen).',
+  bufR:'Radius des Abstandsrings in Metern.',
+  tCheck:'Werkzeug: danach auf die Karte tippen. Zeigt die Ampel (Abstand zum nächsten Bodendenkmal) und alle Denkmäler im Umkreis mit amtlicher Beschreibung.',
+  histR:'Umkreis für den Ort-Check in Metern.',
+  sType:'Typ der Struktur, die du zeichnen willst — z. B. Altstraße/Handelsweg oder Hohlweg.',
+  sLine:'Linie zeichnen: für jeden Stützpunkt auf die Karte tippen, dann „Fertig". Die Länge wird angezeigt.',
+  sArea:'Fläche zeichnen: mindestens 3 Punkte antippen, dann „Fertig".',
+  sGeo:'Alle gezeichneten Strukturen als GeoJSON exportieren (für QGIS).',
+  gFlur:'Flurstück/Gemarkung — vom Flurstücke-Layer ablesen (Kartenebenen → „Flurstücke (ALKIS)" anschalten und stark reinzoomen).',
+  gOwner:'Name des Eigentümers oder Pächters, falls bekannt — sonst leer lassen.',
+  gMe:'Deine Kontaktdaten — werden automatisch in die Anschreiben eingesetzt.',
+  gOwnerLetter:'Erzeugt ein fertiges, höfliches Anschreiben an den Eigentümer mit deinen Zusagen (als Textdatei).',
+  gAdbv:'Erzeugt einen Antrag ans Vermessungsamt (ADBV) auf Eigentümer-Auskunft, inkl. Rechtsgrundlage.',
+  eGpx:'Alle Funde als GPX-Wegpunkte speichern (für Garmin & Karten-Apps).',
+  eGeo:'Alle Funde als GeoJSON speichern (für QGIS).',
+  eBak:'Komplett-Backup deiner Sammlung inkl. Fotos in einer Datei — auch zum Umziehen auf ein anderes Gerät.',
+  iBak:'Backup-Datei einlesen — Funde werden ergänzt, nichts überschrieben.',
+  eCfg:'Speichert nur die Karten-Einstellungen (welche Ebenen an sind usw.) als Datei.',
+  iCfg:'Lädt gespeicherte Karten-Einstellungen.',
+  bReset:'Setzt Ansicht und Karten-Einstellungen auf den Auslieferungszustand zurück. Funde bleiben erhalten.',
+  expertChk:'Zeigt in den Ebenen die technischen Felder (WMS-Adresse, Layer-Name). Nur für Kenner.',
+  installBtn:'Installiert ReliefScope als App auf diesem Gerät.',
+  fabFind:'Fund an meiner Position: fragt kurz nach einer Notiz, setzt den Marker am GPS-Punkt und öffnet die Kamera.',
+  panelHandle:'Panel ein-/ausklappen — zugeklappt bleibt fast der ganze Bildschirm für die Karte.',
+  drawDone:'Schließt die Zeichnung ab und speichert die Struktur.',
+  drawCancel:'Bricht das Zeichnen ab, ohne zu speichern.'
+};
+const HELP_PRESET = {
+  feld:'Feldmodus: schlichte Karte + Bodendenkmäler — schnell und sparsam fürs Gelände.',
+  recherche:'Recherche: Geländerelief + alle vier Denkmal-Kategorien — zum Plätzefinden am Schreibtisch.',
+  historisch:'Historisch: Uraufnahme von ~1850 + Bodendenkmäler — alte Wege und Fluren erkennen. Stark reinzoomen!',
+  luftbild:'Luftbild: aktuelles Orthofoto + Bodendenkmäler — sehen, was heute auf der Fläche los ist.'
+};
+const HELP_TAB = {
+  karte:'Tab „Karte": Ort suchen, Ansicht wählen, Ebenen schalten, Blink-Vergleich.',
+  check:'Tab „Prüfen": Ort-Check (Ampel + Historie) und Strukturen zeichnen.',
+  funde:'Tab „Funde": GPS, Spur, Marker-Werkzeuge und deine Fund-Sammlung.',
+  mehr:'Tab „Mehr": Kurzanleitung, App-Installation, Einstellungen, Genehmigung, Rechtliches.'
+};
+function applyTitles(){
+  for (const [id,t] of Object.entries(HELP)){ const el = document.getElementById(id); if (el) el.title = t; }
+  document.querySelectorAll('#presetChips .chip').forEach(c => c.title = HELP_PRESET[c.dataset.preset] || '');
+  document.querySelectorAll('#tabs button').forEach(b => b.title = HELP_TAB[b.dataset.tabbtn] || '');
+}
+applyTitles();
+
+let helpMode = false, helpTimer = null;
+function showHelp(txt){
+  const t = document.getElementById('helpToast');
+  t.textContent = txt; t.style.display = 'block';
+  clearTimeout(helpTimer); helpTimer = setTimeout(() => t.style.display = 'none', 9000);
+}
+document.getElementById('helpBtn').onclick = () => {
+  helpMode = !helpMode;
+  document.getElementById('helpBtn').classList.toggle('onhelp', helpMode);
+  if (helpMode) showHelp('Hilfe-Modus AN: Tippe auf einen Knopf, Regler oder eine Ebene — du bekommst die Erklärung statt der Aktion. Nochmal „?" tippen beendet.');
+  else document.getElementById('helpToast').style.display = 'none';
+};
+document.addEventListener('click', e => {
+  if (!helpMode) return;
+  if (e.target.closest('#helpBtn') || e.target.closest('#helpToast')) return;
+  if (e.target.closest('summary')) return;                 // Aufklapper dürfen weiter klappen
+  e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation();
+  const t = e.target.closest('[title]');
+  if (t && t.title) showHelp(t.title);
+  else if (e.target.closest('#map')) showHelp('Die Karte: Je nach aktivem Werkzeug setzt ein Tipp hier einen Fund, einen Ring oder prüft den Ort. Runde Knöpfe: ? = Hilfe · ⌖ = GPS · ＋ = Fund an meiner Position.');
+  else showHelp('Dafür gibt es keine Erklärung — tippe auf einen Knopf, Regler oder eine Ebene.');
+}, true);
 
 /* Ortssuche (Nominatim/OSM — frei, ohne Schlüssel) */
 const qIn = document.getElementById('q'), qRes = document.getElementById('qRes');
@@ -1476,6 +1622,14 @@ function showTab(key){
 document.querySelectorAll('#tabs button').forEach(b =>
   b.onclick = () => showTab(b.dataset.tabbtn));
 showTab('karte');
+
+/* ---------------- Start ---------------- */
+renderLayers();
+CONFIG.layers.forEach(mount);
+loadFinds();
+loadStructures();
+trackLoad();
+applyTitles();
 
 /* PWA: Service-Worker registrieren (installierbar + offline-fähig) */
 if ('serviceWorker' in navigator) {
