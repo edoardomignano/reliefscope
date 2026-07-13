@@ -131,6 +131,33 @@
     font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:2px;cursor:pointer}
   #drawctl #drawDone{background:var(--amber);color:#101418;border-color:var(--amber);font-weight:600}
 
+  /* ---------- Aufklappbare Hilfe ---------- */
+  details.help{margin:7px 0 2px}
+  details.help summary{font-size:10px;color:var(--ink-dim);cursor:pointer;letter-spacing:.08em;
+    text-transform:uppercase;user-select:none;list-style:none}
+  details.help summary::before{content:'ℹ ';color:var(--amber-dim)}
+  details.help summary:hover{color:var(--amber)}
+  details.help[open] summary{color:var(--amber)}
+  details.help .hint{margin-top:5px}
+  details#legalWrap summary{color:var(--red);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;cursor:pointer;font-weight:700;padding:8px 0}
+
+  /* ---------- Preset-Chips ---------- */
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+  .chip{flex:1 1 45%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    font-family:var(--mono);font-size:11px;padding:8px 6px;border-radius:3px;cursor:pointer;
+    text-align:center;white-space:nowrap}
+  .chip:hover{border-color:var(--amber-dim);color:var(--amber)}
+  .chip.on{background:var(--amber);color:#101418;border-color:var(--amber);font-weight:700}
+
+  /* ---------- Tab-Leiste (nur mobil) ---------- */
+  #tabs{display:none;flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel-2)}
+  #tabs button{flex:1;background:none;border:none;color:var(--ink-dim);font-family:var(--mono);
+    font-size:16px;padding:8px 0 6px;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:2px}
+  #tabs button span{font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+  #tabs button.on{color:var(--amber)}
+
   /* ---------- Ortssuche ---------- */
   .qhit{padding:7px 6px;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink);
     cursor:pointer;line-height:1.4;word-break:break-word}
@@ -178,9 +205,13 @@
   #panelHandle small{color:var(--ink-dim);font-size:10px;letter-spacing:.08em}
   @media (max-width:820px){
     #app{flex-direction:column-reverse}
-    #panel{width:100%;flex:0 0 auto;max-height:46vh;border-right:none;border-top:1px solid var(--line)}
+    #panel{width:100%;flex:0 0 auto;max-height:52vh;border-right:none;border-top:1px solid var(--line)}
     #panel.mini{max-height:34px;overflow:hidden}
     #panelHandle{display:flex}
+    #tabs{display:flex}
+    #panel header{display:none}                    /* mobil: Griff + Tabs reichen */
+    #scroll [data-tab]{display:none}               /* nur Sektionen des aktiven Tabs */
+    #scroll [data-tab].tab-on{display:block}
     button.b{padding:11px 10px;font-size:12px}
     .fab{width:54px;height:54px;font-size:23px}
     #crosshair{display:none}      /* Maus-Koordinaten sind auf Touch nutzlos */
@@ -197,43 +228,49 @@
     </header>
     <div id="scroll">
 
-      <div class="sec">
+      <div class="sec" data-tab="karte">
         <h2>Suche</h2>
         <input type="text" id="q" placeholder="Stadt, Ort, Adresse … (Enter)" autocomplete="off">
         <div id="qRes"></div>
       </div>
 
-      <div class="sec">
+      <div class="sec" data-tab="karte">
         <h2>Kartenebenen</h2>
-        <label class="f">Ansicht (Preset)</label>
-        <select class="sel" id="preset">
-          <option value="">— eigene Auswahl —</option>
-          <option value="feld">Feldmodus · Karte + Bodendenkmäler</option>
-          <option value="recherche">Recherche · Relief + alle Denkmäler</option>
-          <option value="historisch">Historisch · Uraufnahme ~1850</option>
-          <option value="luftbild">Luftbild · DOP + Bodendenkmäler</option>
-        </select>
+        <div class="chips" id="presetChips">
+          <button class="chip" data-preset="feld">🥾 Feld</button>
+          <button class="chip" data-preset="recherche">🔍 Recherche</button>
+          <button class="chip" data-preset="historisch">🗺 ~1850</button>
+          <button class="chip" data-preset="luftbild">✈ Luftbild</button>
+        </div>
         <div id="layers"></div>
+        <details class="help"><summary>Hilfe zu Denkmal-Kategorien</summary>
         <p class="hint">Denkmäler kommen in vier Kategorien vom BLfD (Boden-, Bau-, Ensemble-, landschaftsprägende Denkmäler) — alle vier sind an, damit kein eingetragenes Denkmal versteckt wird. Nur Bodendenkmäler betreffen das Sondenverbot; ein Baudenkmal wie das Festspielhaus steht unter „Baudenkmäler". Kein sichtbares Denkmal heißt NICHT „frei" — es sind nur die eingetragenen, der Stand ist von heute.</p>
         <p class="hint">Roter Punkt = Kacheln laden nicht. Dann Zahnrad öffnen, Capabilities aufrufen und den echten Layer-Namen eintragen.</p>
+        </details>
       </div>
 
-      <div class="sec">
+      <div class="sec" data-tab="karte">
         <h2>Blink-Analyse</h2>
+        <details class="help"><summary>So funktioniert der Blink-Vergleich</summary>
         <p class="hint"><kbd>Leertaste</kbd> gedrückt halten blendet das Relief aus. Loslassen blendet es wieder ein. Dieses Hin- und Herschalten über der Karte lässt Hohlwege, Terrassen und Gräben herausspringen — statisch übersieht man sie fast immer.</p>
         <p class="hint"><kbd>H</kbd> gedrückt halten blendet die <b>Uraufnahme</b> aus → moderne Karte darunter. So vergleichst du alt/neu und siehst, welche alten Wege heute verschwunden sind. (Uraufnahme-Layer muss an sein.)</p>
+        </details>
       </div>
 
-      <div class="sec">
+      <div class="sec" data-tab="funde">
         <h2>Werkzeuge</h2>
         <button class="b" id="tLoc">📍 GPS folgen (wie Google Maps)</button>
+        <details class="help"><summary>GPS &amp; Karten-Buttons</summary>
         <p class="hint">Oder direkt die runden Buttons auf der Karte: <b>⌖</b> = GPS an/aus (blau = folgt, Karte ziehen pausiert), <b>＋</b> = Fund an meiner Position (fragt Notiz, öffnet Kamera). Jeder Fund hat einen 🧭-Route-Link, der auf dem Handy Google Maps öffnet.</p>
+        </details>
         <label class="f">Spur (wo war ich): <span id="trackInfo">keine</span></label>
         <div class="row2">
           <button class="b" id="tTrackGpx">Spur als GPX</button>
           <button class="b" id="tTrackClear">Spur löschen</button>
         </div>
+        <details class="help"><summary>Was ist die Spur?</summary>
         <p class="hint">Läuft GPS, zeichnet die App automatisch deine Spur auf — so siehst du, welche Bereiche du schon abgesucht hast.</p>
+        </details>
         <label class="f">Kategorie für neue Marker</label>
         <select class="sel" id="findKind">
           <option value="fund">Fund</option>
@@ -244,26 +281,24 @@
         <button class="b" id="tBuf">Abstandsring setzen</button>
         <label class="f">Ringradius: <span id="bufVal">300</span> m</label>
         <input type="range" id="bufR" min="50" max="1000" step="50" value="300">
+        <details class="help"><summary>Marker &amp; Ring</summary>
         <p class="hint">Marker: Werkzeug aktivieren, auf die Karte klicken. Foto und Route fügst du danach in der Sammlung hinzu. Der Ring zeigt, wie weit ein Nähebereich reicht.</p>
+        </details>
       </div>
 
-      <div class="sec">
-        <h2>Historie der Umgebung</h2>
-        <button class="b" id="tHist">Umgebung hier prüfen</button>
+      <div class="sec" data-tab="check">
+        <h2>Ort prüfen</h2>
+        <button class="b" id="tCheck">🎯 Ort antippen &amp; prüfen</button>
         <label class="f">Umkreis: <span id="histVal">500</span> m</label>
         <input type="range" id="histR" min="100" max="2000" step="50" value="500">
-        <p class="hint">Werkzeug an, auf die Karte klicken → eingetragene Denkmäler im Umkreis mit ihrer amtlichen <b>Beschreibung</b> (BLfD: Grabhügel, Siedlung, Zeitstellung …). So verstehst du die Geschichte der Gegend — <b>nicht</b> um auf dem Denkmal zu suchen, sondern um im legalen Umfeld <b>mit Abstand</b> fundierte Schlüsse zu ziehen.</p>
+        <details class="help"><summary>Was zeigt der Ort-Check?</summary>
+        <p class="hint">Werkzeug an, dann auf die Karte tippen. Du bekommst beides auf einmal: die <b>Ampel</b> (darf ich hier? Abstand zum nächsten Bodendenkmal) und die <b>Historie der Umgebung</b> — alle eingetragenen Denkmäler im Umkreis mit ihrer amtlichen Beschreibung (Grabhügel, Siedlung, Zeitstellung …). Zum Verstehen der Gegend, nicht zum Suchen auf dem Denkmal — immer Abstand halten. Kein Freibrief: nur eingetragene Denkmäler, Stand heute.</p>
+        </details>
+        <div id="rateBox"></div>
         <div id="histBox"></div>
       </div>
 
-      <div class="sec">
-        <h2>Platz-Bewertung</h2>
-        <button class="b" id="tRate">Platz hier bewerten</button>
-        <p class="hint">Klick auf die Karte → Ampel aus Denkmal-Abstand (legal) + historischem Umfeld. Regelbasierte Erst-Empfehlung — kein Freibrief.</p>
-        <div id="rateBox"></div>
-      </div>
-
-      <div class="sec">
+      <div class="sec" data-tab="check">
         <h2>Strukturen zeichnen <span id="scnt" style="color:var(--ink-dim)"></span></h2>
         <label class="f">Typ</label>
         <select class="sel" id="sType">
@@ -279,14 +314,18 @@
           <button class="b" id="sLine">Linie zeichnen</button>
           <button class="b" id="sArea">Fläche zeichnen</button>
         </div>
+        <details class="help"><summary>So zeichnest du</summary>
         <p class="hint">Werkzeug wählen, dann für jeden Stützpunkt klicken; „Fertig" schließt ab. Verdächtige alte Wege aus Relief/Uraufnahme nachzeichnen und als Handelsweg/Hohlweg markieren.</p>
+        </details>
         <div id="sList"><div class="empty">Noch keine Strukturen.</div></div>
         <button class="b" id="sGeo" style="margin-top:8px">Strukturen als GeoJSON</button>
       </div>
 
-      <div class="sec">
+      <div class="sec" data-tab="mehr">
         <h2>Genehmigung einholen</h2>
+        <details class="help"><summary>Warum &amp; wie?</summary>
         <p class="hint">Suchen ohne Erlaubnis von Eigentümer/Pächter ist Sachbeschädigung. Schalte den <b>Flurstücke</b>-Layer an, um die Parzelle abzulesen. Den <b>Eigentümernamen</b> gibt kein offener Dienst her (Datenschutz) — er kommt per Antrag beim <b>ADBV</b> (Amt für Digitalisierung, Breitband und Vermessung) mit berechtigtem Interesse, oder frag Gemeinde/ortsansässige Landwirte.</p>
+        </details>
         <label class="f">Flurstück / Gemarkung (vom Layer ablesen)</label>
         <input type="text" id="gFlur" placeholder="z. B. Gemarkung Bayreuth, Fl.-Nr. 1234">
         <label class="f">Eigentümer / Pächter (falls bekannt)</label>
@@ -300,7 +339,7 @@
         <a class="caps" href="https://www.ldbv.bayern.de/vermessung/aemter.html" target="_blank" rel="noopener">Zuständiges Vermessungsamt (ADBV) finden →</a>
       </div>
 
-      <div class="sec">
+      <div class="sec" data-tab="funde">
         <h2>Fund-Sammlung <span id="cnt" style="color:var(--ink-dim)"></span></h2>
         <div id="pts"><div class="empty">Noch keine Funde.</div></div>
         <div class="row2" style="margin-top:10px">
@@ -320,12 +359,21 @@
         <input type="file" id="photoIn" accept="image/*" capture="environment" style="display:none">
       </div>
 
-      <div id="legal">
-        <b>Vor jeder Suche prüfen</b>
-        Auf eingetragenen Bodendenkmälern ist der Einsatz von Metallsonden verboten (Art. 7 Abs. 6 BayDSchG). Im Nähebereich sind Bodeneingriffe erlaubnispflichtig — das BLfD empfiehlt mehrere hundert Meter Abstand. Der Denkmal-Atlas wird laufend aktualisiert, dieses Tool zeigt immer nur den heutigen Stand. Ohne Einverständnis des Grundeigentümers ist Graben Sachbeschädigung. Seit 1.7.2023 gilt in Bayern das Schatzregal: Funde gehören dem Freistaat und sind unverzüglich zu melden.
-      </div>
+      <details id="legalWrap" data-tab="mehr">
+        <summary>⚠ Rechtliches — vor jeder Suche lesen</summary>
+        <div id="legal">
+          <b>Vor jeder Suche prüfen</b>
+          Auf eingetragenen Bodendenkmälern ist der Einsatz von Metallsonden verboten (Art. 7 Abs. 6 BayDSchG). Im Nähebereich sind Bodeneingriffe erlaubnispflichtig — das BLfD empfiehlt mehrere hundert Meter Abstand. Der Denkmal-Atlas wird laufend aktualisiert, dieses Tool zeigt immer nur den heutigen Stand. Ohne Einverständnis des Grundeigentümers ist Graben Sachbeschädigung. Seit 1.7.2023 gilt in Bayern das Schatzregal: Funde gehören dem Freistaat und sind unverzüglich zu melden.
+        </div>
+      </details>
 
     </div>
+    <nav id="tabs">
+      <button data-tabbtn="karte" class="on">🗺<span>Karte</span></button>
+      <button data-tabbtn="check">🎯<span>Prüfen</span></button>
+      <button data-tabbtn="funde">📦<span>Funde</span></button>
+      <button data-tabbtn="mehr">⋯<span>Mehr</span></button>
+    </nav>
   </div>
   <div id="map">
     <div id="crosshair">— <b id="cLat">·</b> / <b id="cLon">·</b></div>
@@ -496,7 +544,7 @@ function renderLayers(){
 
     el.querySelector(`[data-on="${cfg.id}"]`).onchange = e => {
       cfg.on = e.target.checked; mount(cfg);
-      const ps = document.getElementById('preset'); if (ps) ps.value = '';   // Handbedienung = eigene Auswahl
+      document.querySelectorAll('#presetChips .chip').forEach(c => c.classList.remove('on'));  // Handbedienung = eigene Auswahl
     };
     const u = el.querySelector(`[data-url="${cfg.id}"]`);
     const n = el.querySelector(`[data-lyr="${cfg.id}"]`);
@@ -554,14 +602,12 @@ function setMode(m){
   state.mode = state.mode === m ? null : m;
   document.getElementById('tPoint').classList.toggle('active', state.mode === 'point');
   document.getElementById('tBuf').classList.toggle('active', state.mode === 'buf');
-  document.getElementById('tHist').classList.toggle('active', state.mode === 'hist');
-  document.getElementById('tRate').classList.toggle('active', state.mode === 'rate');
+  document.getElementById('tCheck').classList.toggle('active', state.mode === 'inspect');
   map.getContainer().style.cursor = state.mode ? 'crosshair' : '';
 }
 document.getElementById('tPoint').onclick = () => setMode('point');
 document.getElementById('tBuf').onclick   = () => setMode('buf');
-document.getElementById('tHist').onclick  = () => setMode('hist');
-document.getElementById('tRate').onclick  = () => setMode('rate');
+document.getElementById('tCheck').onclick = () => setMode('inspect');
 document.getElementById('bufR').oninput = e => {
   state.bufR = +e.target.value;
   document.getElementById('bufVal').textContent = state.bufR;
@@ -578,10 +624,9 @@ map.on('mousemove', e => {
 
 map.on('click', e => {
   if (state.draw.geom) { drawAddVertex(e.latlng); return; }
-  if (state.mode === 'hist') {
-    checkHistory(e.latlng.lat, e.latlng.lng);
-  } else if (state.mode === 'rate') {
-    ratePlace(e.latlng.lat, e.latlng.lng);
+  if (state.mode === 'inspect') {
+    ratePlace(e.latlng.lat, e.latlng.lng);      // Ampel …
+    checkHistory(e.latlng.lat, e.latlng.lng);   // … + Historie, in einem Tipp
   } else if (state.mode === 'point') {
     const note = prompt('Notiz zum Fund (optional):', '') ?? '';
     addFind(e.latlng.lat, e.latlng.lng, note, document.getElementById('findKind').value);
@@ -1385,13 +1430,18 @@ function applyPreset(key){
   const p = PRESETS[key]; if (!p) return;
   CONFIG.layers.forEach(c => { c.on = p.on.includes(c.id); mount(c); });
   renderLayers();
-  document.getElementById('preset').value = key;
+  document.querySelectorAll('#presetChips .chip')
+    .forEach(c => c.classList.toggle('on', c.dataset.preset === key));
   try { localStorage.setItem('rs_preset', key); } catch(e){}
 }
-document.getElementById('preset').onchange = e => {
-  if (e.target.value) applyPreset(e.target.value);
-  else { try { localStorage.removeItem('rs_preset'); } catch(err){} }
-};
+document.querySelectorAll('#presetChips .chip').forEach(c => {
+  c.onclick = () => {
+    if (c.classList.contains('on')){           // nochmal tippen = Preset lösen
+      c.classList.remove('on');
+      try { localStorage.removeItem('rs_preset'); } catch(e){}
+    } else applyPreset(c.dataset.preset);
+  };
+});
 try {
   const sp = localStorage.getItem('rs_preset');
   if (sp && PRESETS[sp]) applyPreset(sp);
@@ -1406,12 +1456,26 @@ document.getElementById('panelHandle').onclick = () => {
 /* Panel-Sektionen einklappbar (Klick auf Überschrift) */
 document.querySelectorAll('#scroll .sec > h2').forEach(h =>
   h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed')));
-['Historie der Umgebung','Platz-Bewertung','Strukturen zeichnen','Genehmigung einholen']
+['Strukturen zeichnen','Genehmigung einholen']
   .forEach(t => {
     const h = [...document.querySelectorAll('#scroll .sec > h2')]
       .find(x => x.textContent.trim().startsWith(t));
     if (h) h.parentElement.classList.add('collapsed');
   });
+
+/* Tab-Leiste (mobil): Karte / Prüfen / Funde / Mehr */
+function showTab(key){
+  document.querySelectorAll('#tabs button').forEach(b =>
+    b.classList.toggle('on', b.dataset.tabbtn === key));
+  document.querySelectorAll('#scroll [data-tab]').forEach(s =>
+    s.classList.toggle('tab-on', s.dataset.tab === key));
+  const p = document.getElementById('panel');
+  if (p.classList.contains('mini')){ p.classList.remove('mini'); setTimeout(()=>map.invalidateSize(),60); }
+  document.getElementById('scroll').scrollTop = 0;
+}
+document.querySelectorAll('#tabs button').forEach(b =>
+  b.onclick = () => showTab(b.dataset.tabbtn));
+showTab('karte');
 
 /* PWA: Service-Worker registrieren (installierbar + offline-fähig) */
 if ('serviceWorker' in navigator) {
