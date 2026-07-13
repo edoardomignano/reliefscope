@@ -150,6 +150,21 @@
   .chip:hover{border-color:var(--amber-dim);color:var(--amber)}
   .chip.on{background:var(--amber);color:#101418;border-color:var(--amber);font-weight:700}
 
+  /* ---------- Fund-Formular ---------- */
+  #findForm{position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.55);display:none;
+    align-items:flex-end;justify-content:center}
+  #findForm .ff{width:min(480px,100%);background:var(--panel);border:1px solid var(--line);
+    border-bottom:none;border-radius:8px 8px 0 0;padding:14px 16px 18px;
+    box-shadow:0 -6px 30px rgba(0,0,0,.6)}
+  #findForm b{color:var(--amber);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  #findForm .cols{display:flex;gap:8px}
+  #findForm .cols>div{flex:1}
+  #findForm input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line);
+    color:var(--ink);font-family:var(--mono);font-size:12px;padding:7px;border-radius:2px}
+  #findForm .chkrow{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:11px;
+    color:var(--ink-dim)}
+  #findForm .chkrow input{accent-color:var(--amber)}
+
   /* ---------- Hilfe-Modus ---------- */
   .fab.small{width:34px;height:34px;font-size:15px;font-weight:700}
   #helpBtn.onhelp{background:var(--amber);color:#101418;border-color:var(--amber)}
@@ -279,6 +294,18 @@
         </div>
         <details class="help"><summary>Was ist die Spur?</summary>
         <p class="hint">Läuft GPS, zeichnet die App automatisch deine Spur auf — so siehst du, welche Bereiche du schon abgesucht hast.</p>
+        </details>
+        <label class="f">Suchzone: <span id="zoneInfo">keine</span></label>
+        <div class="row2">
+          <button class="b" id="zDraw">Zone zeichnen</button>
+          <button class="b" id="zClear">Zone löschen</button>
+        </div>
+        <div class="layer"><div class="top">
+          <span class="name">⏰ Alarm beim Verlassen</span>
+          <input type="checkbox" id="zAlarm" title="Vibration + Ton, sobald deine GPS-Position die Zone verlässt (GPS muss laufen).">
+        </div></div>
+        <details class="help"><summary>Wozu eine Suchzone?</summary>
+        <p class="hint">Zeichne dein genehmigtes Suchgebiet (3+ Punkte antippen, „Fertig"). Ist der Alarm an und GPS läuft, <b>vibriert und piept</b> das Handy, sobald du die Zone verlässt — so wanderst du nie versehentlich auf fremden Grund oder zu nah an Schutzflächen.</p>
         </details>
         <label class="f">Kategorie für neue Marker</label>
         <select class="sel" id="findKind">
@@ -425,6 +452,30 @@
 </div>
 <div id="photoModal"><img alt="Fundfoto"></div>
 <div id="helpToast"></div>
+<div id="findForm">
+  <div class="ff">
+    <b>Fund speichern</b>
+    <label class="f">Notiz</label>
+    <input type="text" id="ffNote" placeholder="z. B. Münze, Knopf, Hufeisen …">
+    <div class="cols">
+      <div><label class="f">Leitwert / Target-ID</label>
+        <input type="text" id="ffLeit" inputmode="numeric" placeholder="z. B. 78"></div>
+      <div><label class="f">Tiefe (cm)</label>
+        <input type="number" id="ffTiefe" inputmode="numeric" min="0" max="200" placeholder="15"></div>
+    </div>
+    <label class="f">Kategorie</label>
+    <select class="sel" id="ffKind">
+      <option value="fund">Fund</option>
+      <option value="beobachtung">Beobachtung</option>
+      <option value="strukturverdacht">Strukturverdacht</option>
+    </select>
+    <div class="chkrow"><input type="checkbox" id="ffPhoto" checked><span>danach Foto aufnehmen</span></div>
+    <div class="row2" style="margin-top:12px">
+      <button class="b active" id="ffSave">Speichern</button>
+      <button class="b" id="ffCancel">Abbrechen</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -516,7 +567,8 @@ function build(cfg){
 
   let lyr;
   if (cfg.type === 'tile') {
-    lyr = L.tileLayer(cfg.url, opts);
+    // maxNativeZoom: OSM-Kacheln enden bei z19 — darüber hochskalieren statt schwarz
+    lyr = L.tileLayer(cfg.url, Object.assign(opts, { maxZoom: 20, maxNativeZoom: 19 }));
   } else {
     if (!cfg.url || !cfg.layers) return null;
     lyr = L.tileLayer.wms(cfg.url, Object.assign(opts, {
@@ -524,8 +576,9 @@ function build(cfg){
       format: 'image/png',
       transparent: cfg.kind !== 'base',
       version: '1.3.0',
-      crs: L.CRS.EPSG3857
-    }));
+      crs: L.CRS.EPSG3857,
+      maxZoom: 20                    // WMS rendert jede Zoomstufe — ohne das Limit
+    }));                             // verschwinden Ebenen ab z19 (Leaflet-Default 18)
   }
   lyr.on('tileload',  () => setDot(cfg.id, 'ok'));
   lyr.on('tileerror', () => setDot(cfg.id, 'err'));
@@ -668,8 +721,7 @@ map.on('click', e => {
     ratePlace(e.latlng.lat, e.latlng.lng);      // Ampel …
     checkHistory(e.latlng.lat, e.latlng.lng);   // … + Historie, in einem Tipp
   } else if (state.mode === 'point') {
-    const note = prompt('Notiz zum Fund (optional):', '') ?? '';
-    addFind(e.latlng.lat, e.latlng.lng, note, document.getElementById('findKind').value);
+    openFindForm(e.latlng.lat, e.latlng.lng);
   } else if (state.mode === 'buf') {
     const c = L.circle(e.latlng, {
       radius: state.bufR, color:'#d1483c', weight:1.5,
@@ -722,6 +774,7 @@ const sAll   = ()    => idbReq(SSTORE,'readonly',  s => s.getAll());
 const sPut   = obj   => idbReq(SSTORE,'readwrite', s => s.put(obj));
 const sDel   = id    => idbReq(SSTORE,'readwrite', s => s.delete(id));
 const persist = f => idbPut({ id:f.id, lat:f.lat, lng:f.lng, note:f.note, kind:f.kind, ts:f.ts,
+                              leitwert:f.leitwert||null, tiefe:f.tiefe??null,
                               photo:f.photo||null, dstate:f.dstate||null, ddist:f.ddist??null })
                        .catch(e => console.warn('IDB put', e));
 
@@ -730,8 +783,11 @@ function markerFor(f){
   const m = L.circleMarker([f.lat,f.lng],
     { radius:6, color:col, weight:2, fillColor:col, fillOpacity:.85 }).addTo(map);
   const k = (KINDS[f.kind]||KINDS.fund);
+  const meta = [f.leitwert ? 'Leitwert ' + esc(f.leitwert) : '', f.tiefe != null ? f.tiefe + ' cm tief' : '']
+    .filter(Boolean).join(' · ');
   m.bindPopup(`<b>${esc(f.note||k.label)}</b><br>`
     + `<span style="color:#7c8b9a">${k.label} · ${f.lat.toFixed(5)}, ${f.lng.toFixed(5)}</span>`
+    + (meta ? `<br><span style="color:#7c8b9a">${meta}</span>` : '')
     + `<br><a href="${gmapsUrl(f)}" target="_blank" rel="noopener">🧭 Route (Google Maps)</a>`);
   return m;
 }
@@ -740,8 +796,9 @@ function registerFind(f){                 // f: reines Datenobjekt
   f._m = markerFor(f);
   state.finds.push(f);
 }
-async function addFind(lat, lng, note, kind, photo){
+async function addFind(lat, lng, note, kind, photo, leitwert, tiefe){
   const f = { id:gid(), lat, lng, note:note||'', kind:kind||'fund',
+              leitwert:leitwert||null, tiefe:tiefe??null,
               ts:new Date().toISOString(), photo:photo||null };
   registerFind(f);
   await persist(f);
@@ -788,6 +845,7 @@ function renderFinds(){
         <span class="badge" style="background:${k.color}">${k.label}</span>
         <div class="note">${f.note ? esc(f.note) : '<i style="color:var(--ink-dim)">ohne Notiz</i>'}</div>
         <small>${f.lat.toFixed(5)}, ${f.lng.toFixed(5)} · ${f.ts.slice(0,10)}</small>
+        ${f.leitwert || f.tiefe != null ? `<small>${[f.leitwert?'Leitwert '+esc(f.leitwert):'', f.tiefe!=null?'Tiefe '+f.tiefe+' cm':''].filter(Boolean).join(' · ')}</small>` : ''}
         ${f.dstate ? `<small style="color:#d1483c">⚠ ${f.dstate==='innerhalb'?'Im Bodendenkmal — Sonden verboten':'Nähebereich: Bodendenkmal in '+f.ddist+' m'}</small>` : ''}
         <div class="acts">
           <button data-a="go" title="Diesen Fund auf der Karte anzeigen">Karte</button>
@@ -860,6 +918,7 @@ function gpsUpdate(pos){
   }
   if (gps.follow) map.setView([la,lo], Math.max(map.getZoom(), 16), { animate:false });
   trackAdd(la, lo);
+  zoneCheck(la, lo);
   fabState();
 }
 
@@ -901,6 +960,115 @@ document.getElementById('tTrackClear').onclick = () => {
   if (track.line){ map.removeLayer(track.line); track.line = null; }
   trackRender();
 };
+
+/* --- Fund-Formular (Notiz, Leitwert, Tiefe, Foto) --- */
+let ffPos = null;
+function openFindForm(lat, lng){
+  ffPos = [lat, lng];
+  document.getElementById('ffNote').value = '';
+  document.getElementById('ffLeit').value = '';
+  document.getElementById('ffTiefe').value = '';
+  document.getElementById('ffKind').value = document.getElementById('findKind').value;
+  document.getElementById('findForm').style.display = 'flex';
+}
+function closeFindForm(){ document.getElementById('findForm').style.display = 'none'; ffPos = null; }
+document.getElementById('ffCancel').onclick = closeFindForm;
+document.getElementById('findForm').onclick = e => { if (e.target.id === 'findForm') closeFindForm(); };
+document.getElementById('ffSave').onclick = async () => {
+  if (!ffPos) return closeFindForm();
+  const [la, lo] = ffPos;
+  const kind = document.getElementById('ffKind').value;
+  document.getElementById('findKind').value = kind;      // Auswahl merken
+  const f = await addFind(la, lo,
+    document.getElementById('ffNote').value.trim(), kind, null,
+    document.getElementById('ffLeit').value.trim() || null,
+    document.getElementById('ffTiefe').value !== '' ? +document.getElementById('ffTiefe').value : null);
+  const wantPhoto = document.getElementById('ffPhoto').checked;
+  closeFindForm();
+  map.setView([la, lo], Math.max(map.getZoom(), 17));
+  if (f && f._m) f._m.openPopup();
+  if (wantPhoto && f) pickPhoto(f.id);
+};
+
+/* --- Suchzone mit Verlassen-Alarm (Vibration + Ton) --- */
+const zone = { coords:null, layer:null, inside:null };
+function pointInPoly(lat, lng, coords){
+  let ins = false;
+  for (let i = 0, j = coords.length - 1; i < coords.length; j = i++){
+    const [yi, xi] = coords[i], [yj, xj] = coords[j];
+    if (((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) ins = !ins;
+  }
+  return ins;
+}
+function zoneRender(){
+  if (zone.layer){ map.removeLayer(zone.layer); zone.layer = null; }
+  const info = document.getElementById('zoneInfo');
+  if (zone.coords && zone.coords.length >= 3){
+    zone.layer = L.polygon(zone.coords, { color:'#4c9a6a', weight:2, fillColor:'#4c9a6a',
+      fillOpacity:.06, dashArray:'6,4' }).addTo(map).bindPopup('Suchzone (genehmigtes Gebiet)');
+    info.textContent = zone.coords.length + ' Punkte';
+  } else info.textContent = 'keine';
+}
+function zoneSave(){
+  try {
+    zone.coords ? localStorage.setItem('rs_zone', JSON.stringify(zone.coords))
+                : localStorage.removeItem('rs_zone');
+  } catch(e){}
+}
+document.getElementById('zDraw').onclick = () => startDraw('area', true);
+document.getElementById('zClear').onclick = () => {
+  if (!zone.coords) return;
+  if (!confirm('Suchzone löschen?')) return;
+  zone.coords = null; zone.inside = null; zoneSave(); zoneRender();
+};
+document.getElementById('zAlarm').onchange = e => {
+  try { e.target.checked ? localStorage.setItem('rs_zone_alarm','1') : localStorage.removeItem('rs_zone_alarm'); } catch(err){}
+  zone.inside = null;
+  if (e.target.checked && !zone.coords){ alert('Zeichne zuerst eine Zone („Zone zeichnen").'); e.target.checked = false; }
+  else if (e.target.checked && gps.watch == null) showHelp('Alarm ist scharf — starte auch GPS (⌖), damit deine Position überwacht wird.');
+};
+function zoneBeep(){
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'square'; o.frequency.value = 880;
+    o.connect(g); g.connect(ac.destination); g.gain.value = 0.25;
+    o.start();
+    let on = true, n = 0;
+    const iv = setInterval(() => {
+      on = !on; g.gain.value = on ? 0.25 : 0;
+      if (++n >= 6){ clearInterval(iv); o.stop(); ac.close(); }
+    }, 220);
+  } catch(e){}
+}
+function zoneCheck(la, lo){
+  if (!zone.coords || zone.coords.length < 3) return;
+  if (!document.getElementById('zAlarm').checked) return;
+  const ins = pointInPoly(la, lo, zone.coords);
+  if (zone.inside === null){ zone.inside = ins; return; }   // Startzustand merken
+  if (zone.inside && !ins){
+    zone.inside = false;
+    if (navigator.vibrate) navigator.vibrate([300,150,300,150,600]);
+    zoneBeep();
+    showHelp('⚠ SUCHZONE VERLASSEN! Du bist außerhalb deines eingezeichneten Gebiets.');
+  } else if (ins) zone.inside = true;
+}
+function zoneLoad(){
+  try { const c = JSON.parse(localStorage.getItem('rs_zone') || 'null');
+        if (Array.isArray(c) && c.length >= 3) zone.coords = c; } catch(e){}
+  try { document.getElementById('zAlarm').checked = localStorage.getItem('rs_zone_alarm') === '1'; } catch(e){}
+  zoneRender();
+}
+
+/* --- Wake-Lock: Bildschirm bleibt an, solange GPS läuft (zuverlässiges Tracking) --- */
+let wakeLock = null;
+async function wakeOn(){
+  try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+}
+function wakeOff(){ try { wakeLock && wakeLock.release(); } catch(e){} wakeLock = null; }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && gps.watch != null) wakeOn();   // nach Tab-Wechsel neu holen
+});
 function gpsError(err){
   alert('GPS: ' + err.message + gpsHttpsHint());
   gpsStop();
@@ -910,6 +1078,7 @@ function gpsStart(){
   gps.follow = true;                       // VOR watchPosition — erstes Update kann sofort kommen
   gps.watch = navigator.geolocation.watchPosition(gpsUpdate, gpsError,
     { enableHighAccuracy:true, maximumAge:2000, timeout:15000 });
+  wakeOn();                                // Bildschirm anlassen → Tracking reißt nicht ab
   fabState();
 }
 function gpsStop(){
@@ -917,6 +1086,7 @@ function gpsStop(){
   gps.watch = null; gps.follow = false;
   if (gps.marker){ map.removeLayer(gps.marker); map.removeLayer(gps.circle); gps.marker = gps.circle = null; }
   gps.last = null;
+  wakeOff();
   fabState();
 }
 function fabState(){
@@ -938,17 +1108,9 @@ document.getElementById('fabLoc').onclick = () => {
 map.on('dragstart', () => { if (gps.follow){ gps.follow = false; fabState(); } });
 document.getElementById('tLoc').onclick = () => document.getElementById('fabLoc').click();
 
-/* --- Fund an meiner Position (Feld-Workflow: stehen bleiben, ＋ drücken, Foto) --- */
+/* --- Fund an meiner Position (Feld-Workflow: stehen bleiben, ＋ drücken, Formular, Foto) --- */
 function findAtGps(){
-  const mk = (la, lo) => {
-    const note = prompt('Notiz zum Fund (optional):','') ?? '';
-    addFind(la, lo, note, document.getElementById('findKind').value).then(() => {
-      const f = state.finds[state.finds.length-1];
-      map.setView([la,lo], Math.max(map.getZoom(), 17));
-      f._m.openPopup();
-      pickPhoto(f.id);        // Kamera/Galerie direkt anbieten (abbrechen ist ok)
-    });
-  };
+  const mk = (la, lo) => openFindForm(la, lo);
   if (gps.last) return mk(...gps.last);
   if (!navigator.geolocation) return alert('Kein GPS verfügbar.' + gpsHttpsHint());
   navigator.geolocation.getCurrentPosition(
@@ -984,7 +1146,7 @@ document.getElementById('eGeo').onclick = () => {
     features: state.finds.map(f => ({
       type:'Feature',
       geometry:{ type:'Point', coordinates:[f.lng, f.lat] },
-      properties:{ kind:f.kind, note:f.note, ts:f.ts, hasPhoto:!!f.photo }
+      properties:{ kind:f.kind, note:f.note, ts:f.ts, leitwert:f.leitwert, tiefe_cm:f.tiefe, hasPhoto:!!f.photo }
     }))
   }, null, 2), 'application/geo+json');
 };
@@ -995,6 +1157,7 @@ document.getElementById('eBak').onclick = async () => {
   const items = [];
   for (const f of state.finds)
     items.push({ id:f.id, lat:f.lat, lng:f.lng, note:f.note, kind:f.kind, ts:f.ts,
+                 leitwert:f.leitwert||null, tiefe:f.tiefe??null,
                  dstate:f.dstate||null, ddist:f.ddist??null,
                  photo: f.photo ? await blobToDataURL(f.photo) : null });
   dl('reliefscope-sammlung.json',
@@ -1016,6 +1179,7 @@ document.getElementById('bIn').onchange = e => {
         const photo = it.photo ? await dataURLToBlob(it.photo) : null;
         const f = { id: it.id || gid(), lat:it.lat, lng:it.lng, note:it.note||'',
                     kind: it.kind||'fund', ts: it.ts || new Date().toISOString(),
+                    leitwert: it.leitwert||null, tiefe: it.tiefe??null,
                     dstate: it.dstate||null, ddist: it.ddist??null, photo };
         registerFind(f); await persist(f); added++;
       }
@@ -1075,11 +1239,11 @@ const sClean = s => ({ id:s.id, geom:s.geom, type:s.type, note:s.note, coords:s.
 const lineLength = lls => { let d=0; for(let i=1;i<lls.length;i++) d+=lls[i-1].distanceTo(lls[i]); return d; };
 const fmtLen = m => m>=1000 ? (m/1000).toFixed(2)+' km' : Math.round(m)+' m';
 
-function startDraw(geom){
+function startDraw(geom, forZone){
   drawReset();
   if (state.mode) setMode(state.mode);   // aktives Werkzeug abschalten
-  state.draw.geom = geom; state.draw.pts = [];
-  const col = sTyp(document.getElementById('sType').value).c;
+  state.draw.geom = geom; state.draw.pts = []; state.draw.forZone = !!forZone;
+  const col = forZone ? '#4c9a6a' : sTyp(document.getElementById('sType').value).c;
   state.draw.layer = (geom==='area'
       ? L.polygon([],  { color:col, weight:2, fillOpacity:.12, dashArray:'5,4' })
       : L.polyline([], { color:col, weight:3, dashArray:'5,4' })).addTo(map);
@@ -1114,6 +1278,13 @@ function drawFinish(){
   const { geom, pts } = state.draw;
   const min = geom==='area' ? 3 : 2;
   if (pts.length < min) { alert(`Mindestens ${min} Punkte nötig.`); return; }
+  if (state.draw.forZone){
+    zone.coords = pts.map(p => [p.lat, p.lng]);
+    zone.inside = null; zoneSave(); zoneRender();
+    drawReset();
+    showHelp('Suchzone gespeichert ✓ — aktiviere „Alarm beim Verlassen" und starte GPS (⌖).');
+    return;
+  }
   const note = prompt('Notiz zur Struktur (optional):','') ?? '';
   const s = { id:gid(), geom, type:document.getElementById('sType').value,
               note, coords:pts.map(p=>[p.lat,p.lng]), ts:new Date().toISOString() };
@@ -1446,6 +1617,9 @@ const HELP = {
   tLoc:'GPS an/aus. Die Karte folgt deiner Position wie bei Google Maps; Karte ziehen pausiert das Folgen.',
   tTrackGpx:'Deine aufgezeichnete Lauf-Spur als GPX-Datei speichern (für QGIS oder Karten-Apps).',
   tTrackClear:'Löscht die aufgezeichnete Spur unwiderruflich.',
+  zDraw:'Suchzone zeichnen: 3+ Punkte auf der Karte antippen (z. B. dein genehmigtes Feld), dann „Fertig".',
+  zClear:'Löscht die eingezeichnete Suchzone.',
+  zAlarm:'Ist der Alarm an und GPS läuft, vibriert und piept das Handy, sobald du die Zone verlässt.',
   findKind:'Kategorie für neue Marker: Fund = etwas gefunden · Beobachtung = etwas Auffälliges · Strukturverdacht = mögliche alte Struktur im Gelände.',
   tPoint:'Werkzeug: danach auf die Karte tippen — dort wird ein Fund-Marker gesetzt. Die App prüft automatisch den Abstand zu Bodendenkmälern und warnt.',
   tBuf:'Werkzeug: danach auf die Karte tippen — zeichnet einen Abstandsring (z. B. um zu sehen, wie weit 300 m Nähebereich reichen).',
@@ -1629,6 +1803,7 @@ CONFIG.layers.forEach(mount);
 loadFinds();
 loadStructures();
 trackLoad();
+zoneLoad();
 applyTitles();
 
 /* PWA: Service-Worker registrieren (installierbar + offline-fähig) */
