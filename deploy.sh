@@ -1,15 +1,33 @@
 #!/bin/bash
-# Kopiert die App aus ../files, passt Referenzen an und pusht zu GitHub Pages.
-set -e
+# ReliefScope-Deploy: baut die App und pusht dist/ auf den gh-pages-Branch.
+# GitHub Pages served gh-pages — main bleibt reiner Quellcode.
+# Cache-Strategie: vite-plugin-pwa (Workbox) revisioniert jede Datei pro Build;
+# zusätzlich stempeln wir version.txt mit Zeitstempel (Nachvollziehbarkeit +
+# erzwingt einen neuen SW-Hash selbst bei byte-gleichem Build).
+set -euo pipefail
 cd "$(dirname "$0")"
-cp ../files/relief-recherche.html index.html
-cp ../files/manifest.json ../files/icon.svg ../files/sw.js .
-# Dateiname-Referenzen auf index.html umbiegen
-sed -i '' 's/relief-recherche\.html/index.html/g' manifest.json sw.js
-# Cache-Version pro Deploy eindeutig machen (zwingt Clients zum Update)
-V=$(date +%s)
-sed -i '' "s/reliefscope-shell-v[0-9a-z]*/reliefscope-shell-$V/" sw.js
-git add -A
-git commit -m "Deploy $(date '+%Y-%m-%d %H:%M')" || echo "nichts zu committen"
-git push origin main
-echo "Deployed. Pages baut in ~1 Minute."
+
+STAMP="$(date +%Y-%m-%d_%H%M%S)"
+
+npm run build
+echo "$STAMP" > dist/version.txt
+
+# dist/ als Worktree auf gh-pages veröffentlichen
+git fetch origin gh-pages 2>/dev/null || true
+rm -rf .deploy-worktree
+if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+  git worktree add .deploy-worktree origin/gh-pages
+else
+  git worktree add --detach .deploy-worktree
+  (cd .deploy-worktree && git checkout --orphan gh-pages && git rm -rf --quiet . 2>/dev/null || true)
+fi
+
+rsync -a --delete --exclude '.git' dist/ .deploy-worktree/
+(
+  cd .deploy-worktree
+  git add -A
+  git commit -m "Deploy $STAMP" || echo "nichts zu deployen"
+  git push origin HEAD:gh-pages
+)
+git worktree remove --force .deploy-worktree
+echo "Deployed ($STAMP). Pages baut in ~1 Minute: https://edoardomignano.github.io/reliefscope/"

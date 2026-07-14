@@ -1,0 +1,80 @@
+/**
+ * Design-Tokens aus docs/design.md (Frontmatter) — die EINE Quelle für Farben,
+ * Typo, Radien und Abstände. Heller Standardmodus; der dunkle Feld-Modus wird
+ * über [data-mode="feld"] am <html>-Element aktiviert (Umschalt-Logik folgt in
+ * einer späteren Phase) und tauscht NUR Flächen/Text — Amber + Ampel bleiben.
+ */
+:root {
+  /* ---------- Farben: heller Modus ---------- */
+  --surface-0: #f5f5f2;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --on-surface: #1b1b19;
+  --on-surface-muted: #6b6b63;
+  --on-surface-hint: #9a9a90;
+  --border: #e4e3dd;
+  --border-strong: #cfcec6;
+
+  /* Marke (sparsam einsetzen — eine Primäraktion pro Screen) */
+  --accent: #f0a53a;
+  --on-accent: #412402;
+  --text-accent: #9a5a0b;
+
+  /* Ampel-Semantik */
+  --success: #2f7d4f;
+  --on-success: #ffffff;
+  --bg-success: #e7f1ea;
+  --warning: #c7871b;
+  --on-warning: #ffffff;
+  --bg-warning: #fbf0da;
+  --error: #b4291d;
+  --on-error: #ffffff;
+  --bg-error: #f9e7e5;
+
+  /* ---------- Typografie ---------- */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 600 28px/1.2 var(--font-sans);
+  --font-h1: 600 20px/1.25 var(--font-sans);
+  --font-h2: 600 16px/1.3 var(--font-sans);
+  --font-body: 400 15px/1.5 var(--font-sans);
+  --font-caption: 400 12px/1.4 var(--font-sans);
+  --font-mono-coord: 400 13px/1.4 var(--font-mono);
+  --font-brand: 600 16px/1.2 var(--font-mono);
+
+  /* ---------- Radien ---------- */
+  --rounded-sm: 8px;
+  --rounded-md: 12px;
+  --rounded-lg: 16px;
+  --rounded-pill: 999px;
+
+  /* ---------- Abstände (4er-Basis) ---------- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+
+  /* ---------- Maße ---------- */
+  --tabbar-h: 56px;
+  --touch-min: 44px;
+}
+
+/* Dunkler Feld-Modus: nur Flächen und Text wechseln (design.md § Colors). */
+:root[data-mode='feld'] {
+  --surface-0: #101216;
+  --surface-1: #1c1f24;
+  --surface-2: #1c1f24;
+  --on-surface: #e7e9ec;
+  --on-surface-muted: #9aa0a8;
+  --on-surface-hint: #6b7178;
+  --border: #2a2d33;
+  --border-strong: #3a3e45;
+  /* Amber-Text braucht auf dunklem Grund keine Abdunklung */
+  --text-accent: #f0a53a;
+  /* Tints der Ampel auf dunklem Grund */
+  --bg-success: #1b2a20;
+  --bg-warning: #2c2314;
+  --bg-error: #2e1715;
+}
