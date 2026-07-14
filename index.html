@@ -28,8 +28,24 @@
             <div id="check-result"></div>
           </section>
           <section data-tab="funde" aria-labelledby="h-funde">
-            <h2 id="h-funde">Funde</h2>
-            <p class="placeholder">Fund-Logbuch folgt in Phase 4.</p>
+            <h2 id="h-funde">Feld &amp; Funde</h2>
+            <div id="field-controls">
+              <h3>Spur</h3>
+              <p id="track-info" class="muted">Läuft GPS, wird deine Spur automatisch aufgezeichnet.</p>
+              <button type="button" id="track-clear" class="btn-secondary">Spur löschen</button>
+
+              <h3>Suchzone</h3>
+              <p id="zone-info" class="muted">keine Zone</p>
+              <div class="row2">
+                <button type="button" id="zone-draw" class="btn-secondary">Zone zeichnen</button>
+                <button type="button" id="zone-clear" class="btn-secondary">Zone löschen</button>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="zone-alarm" />
+                Alarm, wenn ich die Zone verlasse (Vibration + Ton)
+              </label>
+            </div>
+            <div id="finds-list"><p class="placeholder">Fund-Logbuch folgt in Phase 4.</p></div>
           </section>
           <section data-tab="mehr" aria-labelledby="h-mehr">
             <h2 id="h-mehr">Mehr</h2>
@@ -43,7 +59,18 @@
           <button data-tabbtn="mehr" type="button">⋯<span>Mehr</span></button>
         </nav>
       </aside>
-      <main id="map" aria-label="Karte"></main>
+      <main id="map" aria-label="Karte">
+        <div id="hud" role="status">
+          <span class="hud-chip">⏱ <b id="hud-time">0:00</b></span>
+          <span class="hud-chip">🥾 <b id="hud-dist">0 m</b></span>
+          <span class="hud-chip">± <b id="hud-acc">–</b></span>
+        </div>
+        <div id="zonectl">
+          <span>Zone: für jeden Eckpunkt tippen</span>
+          <button type="button" id="zone-done">Fertig</button>
+          <button type="button" id="zone-cancel">Abbrechen</button>
+        </div>
+      </main>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
