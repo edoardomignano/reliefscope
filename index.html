@@ -44,8 +44,10 @@
                 <input type="checkbox" id="zone-alarm" />
                 Alarm, wenn ich die Zone verlasse (Vibration + Ton)
               </label>
+              <h3>Fund setzen</h3>
+              <button type="button" id="finds-place" class="btn-secondary">Fund-Marker auf Karte setzen</button>
             </div>
-            <div id="finds-list"><p class="placeholder">Fund-Logbuch folgt in Phase 4.</p></div>
+            <div id="finds-list"><p class="placeholder">Noch keine Funde. Tipp auf ＋.</p></div>
           </section>
           <section data-tab="mehr" aria-labelledby="h-mehr">
             <h2 id="h-mehr">Mehr</h2>
@@ -72,6 +74,38 @@
         </div>
       </main>
     </div>
+
+    <div id="find-form" hidden>
+      <div class="ff-sheet">
+        <b>Fund speichern</b>
+        <small id="ff-coords" class="mono-coord"></small>
+        <label class="f">Symbol</label>
+        <div id="ff-symbols" class="symgrid"></div>
+        <label class="f" for="ff-note">Notiz</label>
+        <input type="text" id="ff-note" placeholder="z. B. Münze, Knopf, Hufeisen …" />
+        <div class="row2">
+          <label class="f col"
+            >Leitwert / Target-ID
+            <input type="text" id="ff-leit" placeholder="z. B. 78" /></label>
+          <label class="f col"
+            >Tiefe (cm) <input type="number" id="ff-tiefe" min="0" placeholder="15" /></label>
+        </div>
+        <label class="f" for="ff-kind">Kategorie</label>
+        <select id="ff-kind" class="sel">
+          <option value="fund">Fund</option>
+          <option value="beobachtung">Beobachtung</option>
+          <option value="strukturverdacht">Strukturverdacht</option>
+        </select>
+        <label class="check-row"><input type="checkbox" id="ff-photo-after" checked /> danach Foto aufnehmen</label>
+        <div class="row2">
+          <button type="button" id="ff-save" class="btn-primary">Speichern</button>
+          <button type="button" id="ff-cancel" class="btn-secondary">Abbrechen</button>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="ff-file" accept="image/*" capture="environment" hidden />
+    <div id="photo-modal" hidden><img alt="Fundfoto" /></div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
