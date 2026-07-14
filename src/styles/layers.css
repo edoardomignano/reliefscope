@@ -1,0 +1,130 @@
+/* Ebenen-Steuerung + Preset-Chips + Relief-Blend (design.md § Components/Shapes). */
+
+/* ---------- Preset-Chips ---------- */
+#presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm, 8px);
+  margin-bottom: var(--space-lg, 16px);
+}
+
+.chip {
+  flex: 1 1 45%;
+  min-height: var(--touch-min, 44px);
+  background: var(--surface-1, #fff);
+  color: var(--on-surface, #1b1b19);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-pill, 999px);
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.chip:active {
+  transform: scale(0.97);
+}
+.chip.on {
+  background: var(--accent, #f0a53a);
+  color: var(--on-accent, #412402);
+  border-color: transparent;
+}
+
+/* ---------- Ebenen-Zeilen ---------- */
+.layer {
+  background: var(--surface-1, #fff);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-md, 12px);
+  padding: var(--space-md, 12px);
+  margin-bottom: var(--space-sm, 8px);
+}
+
+.layer-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 8px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: var(--rounded-pill, 999px);
+  background: var(--border-strong, #cfcec6);
+}
+.dot.ok {
+  background: var(--success, #2f7d4f);
+}
+.dot.err {
+  background: var(--error, #b4291d);
+}
+.dot.load {
+  background: var(--warning, #c7871b);
+}
+
+.layer-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.layer-info {
+  margin: 6px 0 8px;
+  color: var(--on-surface-muted, #6b6b63);
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+}
+
+.opacity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 8px);
+  color: var(--on-surface-muted, #6b6b63);
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+}
+.opacity input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent, #f0a53a);
+}
+
+/* iOS-artiger Toggle */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 26px;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider-ui {
+  position: absolute;
+  inset: 0;
+  background: var(--border-strong, #cfcec6);
+  border-radius: var(--rounded-pill, 999px);
+  transition: background 0.15s;
+}
+.slider-ui::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+.switch input:checked + .slider-ui {
+  background: var(--accent, #f0a53a);
+}
+.switch input:checked + .slider-ui::before {
+  transform: translateX(16px);
+}
+
+/* ---------- Relief-Blend-Pane (TASK-013) ---------- */
+.leaflet-reliefPane-pane {
+  mix-blend-mode: multiply;
+}
