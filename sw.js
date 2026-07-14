@@ -1,5 +1,5 @@
 /* ReliefScope Service Worker — App-Shell offline + Kacheln/API opportunistisch cachen */
-const SHELL_CACHE = 'reliefscope-shell-1783974961';
+const SHELL_CACHE = 'reliefscope-shell-1784047052';
 const RT_CACHE    = 'reliefscope-runtime-v1';
 const SHELL = [
   'index.html',
