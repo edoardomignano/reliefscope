@@ -326,7 +326,7 @@
         <div id="layers"></div>
         <details class="help"><summary>Hilfe zu Denkmal-Kategorien</summary>
         <p class="hint">Denkmäler kommen in vier Kategorien vom BLfD (Boden-, Bau-, Ensemble-, landschaftsprägende Denkmäler) — alle vier sind an, damit kein eingetragenes Denkmal versteckt wird. Nur Bodendenkmäler betreffen das Sondenverbot; ein Baudenkmal wie das Festspielhaus steht unter „Baudenkmäler". Kein sichtbares Denkmal heißt NICHT „frei" — es sind nur die eingetragenen, der Stand ist von heute.</p>
-        <p class="hint">Roter Punkt = Kacheln laden nicht — meist fehlt Internet oder der Bayern-Dienst ist kurz gestört; einfach später nochmal. Die technischen Layer-Adressen sind fest eingestellt und lassen sich nur im Experten-Modus ändern (Mehr → App &amp; Einstellungen).</p>
+        <p class="hint">Roter Punkt = Kacheln laden nicht — meist fehlt Internet oder der Bayern-Dienst ist kurz gestört; einfach später nochmal probieren. Die Karten-Adressen sind fest eingestellt und geprüft — da kann man nichts verstellen.</p>
         </details>
       </div>
 
@@ -431,18 +431,7 @@
         <h2>App &amp; Einstellungen</h2>
         <button class="b" id="installBtn" style="display:none">📲 Als App installieren</button>
         <p class="hint" id="installHint"></p>
-        <div class="layer"><div class="top">
-          <span class="name">Experten-Modus</span>
-          <input type="checkbox" id="expertChk" title="Zeigt in den Ebenen-Einstellungen die WMS-Adressen und Layer-Namen zum Bearbeiten. Nur anschalten, wenn du weißt, was du tust — falsche Werte lassen Ebenen leer erscheinen.">
-        </div></div>
-        <details class="help"><summary>Was ist der Experten-Modus?</summary>
-        <p class="hint">Schaltet in den Kartenebenen die technischen Felder frei (WMS-Adresse, Layer-Name). Normal brauchst du das nie — die Adressen sind fest eingestellt und geprüft. Geht etwas schief: „Zurücksetzen" stellt alles wieder her.</p>
-        </details>
         <button class="b" id="bReset">Karten-Setup zurücksetzen</button>
-        <div class="row2">
-          <button class="b" id="eCfg">Karten-Setup sichern</button>
-          <button class="b" id="iCfg">Setup laden</button>
-        </div>
       </div>
 
       <div class="sec" data-tab="mehr">
@@ -474,7 +463,6 @@
           <button class="b" id="eBak">Sammlung sichern</button>
           <button class="b" id="iBak">Sammlung laden</button>
         </div>
-        <input type="file" id="fIn" accept=".json" style="display:none">
         <input type="file" id="bIn" accept=".json" style="display:none">
         <input type="file" id="photoIn" accept="image/*" capture="environment" style="display:none">
       </div>
@@ -678,11 +666,6 @@ function renderLayers(){
   CONFIG.layers.forEach(cfg => {
     const el = document.createElement('div');
     el.className = 'layer';
-    const capsUrl = cfg.type === 'wms' && cfg.url
-      ? cfg.url + (cfg.url.includes('?') ? '' : '?') + 'SERVICE=WMS&REQUEST=GetCapabilities'
-      : null;
-
-    const expert = isExpert();
     el.innerHTML = `
       <div class="top">
         <span class="dot" data-dot="${cfg.id}" title="Status: grün = Kacheln laden, rot = Ladefehler (meist kein Internet oder Dienst kurz gestört)"></span>
@@ -694,26 +677,15 @@ function renderLayers(){
         ${cfg.note ? `<p class="hint" style="margin-bottom:6px">${cfg.note}</p>` : ''}
         <label class="f">Deckkraft</label>
         <input type="range" min="0" max="100" value="${Math.round(cfg.opacity*100)}" data-op="${cfg.id}" title="Durchsichtigkeit — zum Überblenden mit der Ebene darunter">
-        ${expert && cfg.type === 'wms' ? `
-        <label class="f">WMS-Adresse (Experte)</label>
-        <input type="text" value="${cfg.url}" data-url="${cfg.id}" placeholder="https://…">
-        <label class="f">Layer-Name (Experte)</label>
-        <input type="text" value="${cfg.layers || ''}" data-lyr="${cfg.id}" placeholder="z. B. by_relief_kombiniert">
-        ${capsUrl ? `<a class="caps" href="${capsUrl}" target="_blank" rel="noopener">Capabilities öffnen →</a>` : ''}` : ''}
       </div>`;
 
     const gear = el.querySelector('.gear');
     if (gear) gear.onclick = () => el.classList.toggle('open');
-    if (expert && cfg.type === 'wms' && (!cfg.url || !cfg.layers)) el.classList.add('open');
 
     el.querySelector(`[data-on="${cfg.id}"]`).onchange = e => {
       cfg.on = e.target.checked; mount(cfg);
       document.querySelectorAll('#presetChips .chip').forEach(c => c.classList.remove('on'));  // Handbedienung = eigene Auswahl
     };
-    const u = el.querySelector(`[data-url="${cfg.id}"]`);
-    const n = el.querySelector(`[data-lyr="${cfg.id}"]`);
-    if (u) u.onchange = e => { cfg.url = e.target.value.trim(); mount(cfg); renderLayers(); };
-    if (n) n.onchange = e => { cfg.layers = e.target.value.trim(); mount(cfg); };
     const o = el.querySelector(`[data-op="${cfg.id}"]`);
     if (o) o.oninput = e => {
       cfg.opacity = e.target.value / 100;
@@ -1325,30 +1297,6 @@ document.getElementById('bIn').onchange = e => {
   r.readAsText(file);
 };
 
-/* Layer-Setup (nur Kartenebenen, ohne Funde) */
-document.getElementById('eCfg').onclick = () => {
-  dl('reliefscope-layer-setup.json',
-    JSON.stringify({ layers: CONFIG.layers.map(({_m, ...c}) => c) }, null, 2),
-    'application/json');
-};
-document.getElementById('iCfg').onclick = () => document.getElementById('fIn').click();
-document.getElementById('fIn').onchange = e => {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = () => {
-    try {
-      const d = JSON.parse(r.result);
-      if (d.layers) d.layers.forEach(saved => {
-        const c = CONFIG.layers.find(x => x.id === saved.id);
-        if (c) Object.assign(c, saved);
-      });
-      renderLayers();
-      CONFIG.layers.forEach(mount);
-    } catch (err) { alert('Datei konnte nicht gelesen werden: ' + err.message); }
-  };
-  r.readAsText(f);
-};
-
 /* Beim Start: gespeicherte Sammlung laden */
 async function loadFinds(){
   try {
@@ -1710,13 +1658,7 @@ ${me.split(',')[0] || me}`;
   dl('antrag-adbv-eigentuemerauskunft.txt', txt, 'text/plain;charset=utf-8');
 };
 
-/* ---------------- Einstellungen: Experten-Modus, Reset, Installation ---------------- */
-const isExpert = () => { try { return localStorage.getItem('rs_expert') === '1'; } catch(e){ return false; } };
-document.getElementById('expertChk').checked = isExpert();
-document.getElementById('expertChk').onchange = e => {
-  try { e.target.checked ? localStorage.setItem('rs_expert','1') : localStorage.removeItem('rs_expert'); } catch(err){}
-  renderLayers();
-};
+/* ---------------- Einstellungen: Reset, Installation ---------------- */
 document.getElementById('bReset').onclick = () => {
   if (!confirm('Karten-Setup zurücksetzen? (Deine Funde, Strukturen und die Spur bleiben erhalten.)')) return;
   try { localStorage.removeItem('rs_preset'); localStorage.removeItem('rs_expert'); } catch(e){}
@@ -1774,10 +1716,7 @@ const HELP = {
   eGeo:'Alle Funde als GeoJSON speichern (für QGIS).',
   eBak:'Komplett-Backup deiner Sammlung inkl. Fotos in einer Datei — auch zum Umziehen auf ein anderes Gerät.',
   iBak:'Backup-Datei einlesen — Funde werden ergänzt, nichts überschrieben.',
-  eCfg:'Speichert nur die Karten-Einstellungen (welche Ebenen an sind usw.) als Datei.',
-  iCfg:'Lädt gespeicherte Karten-Einstellungen.',
   bReset:'Setzt Ansicht und Karten-Einstellungen auf den Auslieferungszustand zurück. Funde bleiben erhalten.',
-  expertChk:'Zeigt in den Ebenen die technischen Felder (WMS-Adresse, Layer-Name). Nur für Kenner.',
   installBtn:'Installiert ReliefScope als App auf diesem Gerät.',
   fabFind:'Fund an meiner Position: fragt kurz nach einer Notiz, setzt den Marker am GPS-Punkt und öffnet die Kamera.',
   panelHandle:'Panel ein-/ausklappen — zugeklappt bleibt fast der ganze Bildschirm für die Karte.',
