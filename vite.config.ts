@@ -27,9 +27,35 @@ export default defineConfig(({ command }) => ({
         ],
       },
       workbox: {
-        // Phase 0: nur App-Shell-Precache (Offline-Start).
-        // Runtime-Caching für Kacheln/Denkmal-API kommt in TASK-044.
+        // App-Shell precache → Offline-Erststart (TASK-044).
         globPatterns: ['**/*.{js,css,html,svg,webmanifest}'],
+        navigateFallback: 'index.html', // Offline-Reload der Wurzel
+        // Neuer Build ⇒ neuer SW-Hash ⇒ Clients aktualisieren ohne Handarbeit.
+        // deploy.sh stempelt zusätzlich version.txt (TASK-045).
+        skipWaiting: true,
+        clientsClaim: true,
+        // Runtime-Cache fürs Feld: besuchte Kacheln/Denkmal-Antworten offline (FR-012).
+        // Nur GET an amtliche Bayern-Hosts + OSM-Kacheln; Nominatim bleibt Netz-only.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.hostname.endsWith('bayern.de'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'rs-bayern',
+              expiration: { maxEntries: 1000, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] }, // 0 = opake WMS-Kachel
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.hostname === 'tile.openstreetmap.org',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'rs-osm',
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
