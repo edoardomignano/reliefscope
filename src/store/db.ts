@@ -46,6 +46,18 @@ export interface Structure {
   ts: number;
 }
 
+/** Genehmigtes Suchgebiet mit Eigentümer-Kontakt (Phase 6). */
+export interface Area {
+  id: string;
+  name: string; // Bezeichnung, z. B. „Acker am Bach"
+  owner: string; // Eigentümer/Pächter (für Rückfragen)
+  phone: string; // Telefonnummer
+  note: string;
+  status: 'erteilt' | 'angefragt' | 'abgelehnt';
+  coords: [number, number][]; // Polygon [lat, lng]
+  ts: number;
+}
+
 interface ReliefScopeDB extends DBSchema {
   finds: {
     key: string;
@@ -57,6 +69,11 @@ interface ReliefScopeDB extends DBSchema {
     value: Structure;
     indexes: { ts: number };
   };
+  areas: {
+    key: string;
+    value: Area;
+    indexes: { ts: number };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ReliefScopeDB>> | null = null;
@@ -64,12 +81,18 @@ let dbPromise: Promise<IDBPDatabase<ReliefScopeDB>> | null = null;
 /** Die eine, memoisierte DB-Verbindung. */
 export function db(): Promise<IDBPDatabase<ReliefScopeDB>> {
   if (!dbPromise) {
-    dbPromise = openDB<ReliefScopeDB>('reliefscope', 1, {
-      upgrade(database) {
-        const finds = database.createObjectStore('finds', { keyPath: 'id' });
-        finds.createIndex('ts', 'ts');
-        const structures = database.createObjectStore('structures', { keyPath: 'id' });
-        structures.createIndex('ts', 'ts');
+    dbPromise = openDB<ReliefScopeDB>('reliefscope', 2, {
+      upgrade(database, oldVersion) {
+        if (oldVersion < 1) {
+          const finds = database.createObjectStore('finds', { keyPath: 'id' });
+          finds.createIndex('ts', 'ts');
+          const structures = database.createObjectStore('structures', { keyPath: 'id' });
+          structures.createIndex('ts', 'ts');
+        }
+        if (oldVersion < 2) {
+          const areas = database.createObjectStore('areas', { keyPath: 'id' });
+          areas.createIndex('ts', 'ts');
+        }
       },
     });
   }
@@ -103,4 +126,17 @@ export async function allStructures(): Promise<Structure[]> {
 
 export async function deleteStructure(id: string): Promise<void> {
   await (await db()).delete('structures', id);
+}
+
+export async function putArea(area: Area): Promise<void> {
+  await (await db()).put('areas', area);
+}
+
+/** Alle genehmigten Gebiete, nach Zeitstempel aufsteigend. */
+export async function allAreas(): Promise<Area[]> {
+  return (await db()).getAllFromIndex('areas', 'ts');
+}
+
+export async function deleteArea(id: string): Promise<void> {
+  await (await db()).delete('areas', id);
 }

@@ -11,6 +11,7 @@ import './styles/ortcheck.css';
 import './styles/field.css';
 import './styles/toast.css';
 import './styles/finds.css';
+import './styles/areas.css';
 
 import { initMap } from './map/map';
 import { mountDefaultLayers } from './map/layers';
@@ -26,6 +27,7 @@ import { initGps } from './geo/gps';
 import { initTrack } from './features/track';
 import { initZone } from './features/zone';
 import { initFinds } from './features/finds';
+import { initAreas } from './features/areas';
 
 function start(): void {
   const map = initMap('map');
@@ -48,6 +50,7 @@ function start(): void {
   initTrack();
   initZone();
   void initFinds();
+  void initAreas();
 
   if (import.meta.env.DEV) {
     (window as unknown as Record<string, unknown>).__map = map;
