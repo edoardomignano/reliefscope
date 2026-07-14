@@ -7,12 +7,14 @@ import './styles/map.css';
 import './styles/sheet.css';
 import './styles/layers.css';
 import './styles/search.css';
+import './styles/ortcheck.css';
 
 import { initMap } from './map/map';
 import { mountDefaultLayers } from './map/layers';
 import { initLayerControls } from './ui/layerControls';
 import { initPresets } from './map/presets';
 import { initSearch } from './features/search';
+import { initOrtcheck } from './features/ortcheck';
 import { initAttribution } from './ui/attribution';
 import { initTabs } from './ui/tabs';
 import { initSheet } from './ui/sheet';
@@ -26,6 +28,7 @@ function start(): void {
   initLayerControls(); // Ebenen-Toggles/Deckkraft/Status (baut auf mountDefaultLayers)
   initPresets(); // Ansichts-Chips (nach LayerControls: braucht syncLayerCheckboxes)
   initSearch(); // schwebende Such-Pille
+  initOrtcheck(); // Ort-Check (Ampel + Historie)
   initAttribution(); // Rechtliches/Lizenzen im Mehr-Tab
 
   // Shell

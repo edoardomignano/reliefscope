@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// GitHub Pages served die App unter /reliefscope/ — base ist Pflicht,
-// sonst zeigen alle Asset-Pfade ins Leere.
-export default defineConfig({
-  base: '/reliefscope/',
+// GitHub Pages served die App unter /reliefscope/ → Build braucht diese base.
+// Im Dev (`serve`) dagegen base '/' — sonst leitet die Vorschau http://localhost:5199/
+// auf /reliefscope/ um und wirkt „kaputt".
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/reliefscope/' : '/',
   build: { target: 'es2022' },
   plugins: [
     VitePWA({
@@ -32,4 +33,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+}));
