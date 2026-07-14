@@ -52,6 +52,30 @@ export function isTracking(): boolean {
   return gps.watch !== null;
 }
 
+/**
+ * Aktuelle Position für „Fund an meiner Position". Nutzt die laufende GPS-Position,
+ * sonst eine Einzelabfrage. Wirft (mit Nutzer-Toast) bei Fehler.
+ */
+export function getPosition(): Promise<GpsFix> {
+  if (gps.last) return Promise.resolve(gps.last);
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      toast('Kein GPS in diesem Browser.' + httpsHint(), 'error');
+      reject(new Error('no geolocation'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+      (err) => {
+        onError(err);
+        reject(new Error('position error'));
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
+    );
+  });
+}
+
 export function initGps(): void {
   onFab('gps', toggleFromFab);
   fabElement('gps')?.classList.add('gps-fab');
