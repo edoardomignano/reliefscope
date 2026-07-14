@@ -1,0 +1,88 @@
+/* Genehmigte Gebiete: Zeichensteuerung, Formular, Liste. */
+
+/* Zeichensteuerung (wie Zonen-Steuerung) */
+#areactl {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 850;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-1, #fff);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-md, 12px);
+  padding: 8px 12px;
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+  box-shadow: var(--shadow, 0 4px 18px rgba(27, 27, 25, 0.16));
+}
+#areactl button {
+  border: 1px solid var(--border, #e4e3dd);
+  background: var(--surface-0, #f5f5f2);
+  border-radius: var(--rounded-pill, 999px);
+  padding: 6px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+#areactl #area-done {
+  background: var(--success, #2f7d4f);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+/* Formular-Overlay (teilt die Bottom-Sheet-Optik mit dem Fund-Formular) */
+#area-form {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(27, 27, 25, 0.35);
+}
+#area-form[hidden] {
+  display: none;
+}
+#area-form input[type='tel'] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-sm, 8px);
+  font: var(--font-body, 400 15px/1.5 system-ui, sans-serif);
+  background: var(--surface-0, #f5f5f2);
+  color: var(--on-surface, #1b1b19);
+}
+
+/* Liste */
+#areas-list {
+  margin-top: var(--space-sm, 8px);
+}
+.area .area-name {
+  font-weight: 600;
+  margin: 4px 0 2px;
+}
+.area .area-info small {
+  display: block;
+  color: var(--on-surface-muted, #6b6b63);
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+}
+.area .area-info small a {
+  color: var(--text-accent, #9a5a0b);
+}
+.area-acts {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.area-acts button {
+  background: var(--surface-0, #f5f5f2);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-pill, 999px);
+  padding: 5px 12px;
+  cursor: pointer;
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+  color: var(--on-surface, #1b1b19);
+}

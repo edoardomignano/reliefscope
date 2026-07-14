@@ -46,6 +46,11 @@
               </label>
               <h3>Fund setzen</h3>
               <button type="button" id="finds-place" class="btn-secondary">Fund-Marker auf Karte setzen</button>
+
+              <h3>Genehmigte Gebiete</h3>
+              <p class="muted">Markiere Felder, für die du eine Erlaubnis hast — mit Eigentümer und Telefon für Rückfragen.</p>
+              <button type="button" id="area-draw" class="btn-secondary">Gebiet zeichnen</button>
+              <div id="areas-list"></div>
             </div>
             <div id="finds-list"><p class="placeholder">Noch keine Funde. Tipp auf ＋.</p></div>
           </section>
@@ -71,6 +76,11 @@
           <span>Zone: für jeden Eckpunkt tippen</span>
           <button type="button" id="zone-done">Fertig</button>
           <button type="button" id="zone-cancel">Abbrechen</button>
+        </div>
+        <div id="areactl">
+          <span>Feld: für jede Ecke tippen</span>
+          <button type="button" id="area-done">Fertig</button>
+          <button type="button" id="area-cancel">Abbrechen</button>
         </div>
       </main>
     </div>
@@ -105,6 +115,30 @@
     </div>
     <input type="file" id="ff-file" accept="image/*" capture="environment" hidden />
     <div id="photo-modal" hidden><img alt="Fundfoto" /></div>
+
+    <div id="area-form" hidden>
+      <div class="ff-sheet">
+        <b>Genehmigtes Gebiet</b>
+        <label class="f" for="ar-name">Bezeichnung</label>
+        <input type="text" id="ar-name" placeholder="z. B. Acker am Bach" />
+        <label class="f" for="ar-owner">Eigentümer / Pächter</label>
+        <input type="text" id="ar-owner" placeholder="Name" />
+        <label class="f" for="ar-phone">Telefon (für Rückfragen)</label>
+        <input type="tel" id="ar-phone" placeholder="0170 1234567" />
+        <label class="f" for="ar-note">Notiz</label>
+        <input type="text" id="ar-note" placeholder="z. B. bis Oktober, nur Wiese" />
+        <label class="f" for="ar-status">Status</label>
+        <select id="ar-status" class="sel">
+          <option value="erteilt">Erlaubnis erteilt</option>
+          <option value="angefragt">angefragt</option>
+          <option value="abgelehnt">abgelehnt</option>
+        </select>
+        <div class="row2">
+          <button type="button" id="ar-save" class="btn-primary">Speichern</button>
+          <button type="button" id="ar-cancel" class="btn-secondary">Abbrechen</button>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
