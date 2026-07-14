@@ -1,6 +1,5 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { OSM_TILES } from '../config/datasources';
 
 /** Bayern-Mitte als Start (ganz Bayern im Blick). */
 const BAYERN_CENTER: L.LatLngTuple = [48.95, 11.5];
@@ -8,7 +7,11 @@ const START_ZOOM = 7;
 
 let map: L.Map | null = null;
 
-/** Initialisiert die Karte genau einmal und gibt sie zurück. */
+/**
+ * Initialisiert die Karte genau einmal und gibt sie zurück.
+ * Die Basisebenen (inkl. OSM) werden separat über layers.ts gemountet, damit sie
+ * im Panel steuerbar sind.
+ */
 export function initMap(containerId = 'map'): L.Map {
   if (map) return map;
 
@@ -18,14 +21,6 @@ export function initMap(containerId = 'map'): L.Map {
     maxZoom: 20,
     zoomControl: true,
   });
-
-  // OSM-Basiskarte. maxNativeZoom 19 ist Pflicht — darüber wird hochskaliert
-  // statt fehlende Kacheln (= schwarze Karte) zu laden. (PRD § 2 Gotcha)
-  L.tileLayer(OSM_TILES.url, {
-    maxZoom: 20,
-    maxNativeZoom: OSM_TILES.maxNativeZoom,
-    attribution: OSM_TILES.attribution,
-  }).addTo(map);
 
   return map;
 }

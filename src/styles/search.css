@@ -1,0 +1,91 @@
+/* Schwebende Ortssuche (design.md § Components: search-pill). */
+
+#searchbar {
+  position: absolute;
+  top: var(--space-md, 12px);
+  left: 56px; /* rechts neben den Leaflet-Zoom-Buttons */
+  right: var(--space-md, 12px);
+  z-index: 860;
+  max-width: 420px;
+}
+
+@media (min-width: 821px) {
+  #searchbar {
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    width: 400px;
+  }
+}
+
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 8px);
+  height: 44px;
+  padding: 0 16px;
+  background: var(--surface-1, #fff);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-pill, 999px);
+  box-shadow: 0 2px 10px rgba(27, 27, 25, 0.14);
+}
+
+.search-pill span {
+  color: var(--on-surface-muted, #6b6b63);
+}
+
+.search-pill input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font: var(--font-body, 400 15px/1.5 system-ui, sans-serif);
+  color: var(--on-surface, #1b1b19);
+}
+.search-pill input:focus {
+  outline: none;
+}
+
+#q-results {
+  margin-top: 6px;
+  background: var(--surface-1, #fff);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-md, 12px);
+  box-shadow: 0 4px 18px rgba(27, 27, 25, 0.16);
+  overflow: hidden;
+  max-height: 44vh;
+  overflow-y: auto;
+}
+#q-results:empty {
+  display: none;
+}
+
+.qhit {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border, #e4e3dd);
+  font: var(--font-body, 400 15px/1.5 system-ui, sans-serif);
+  color: var(--on-surface, #1b1b19);
+}
+.qhit:last-child {
+  border-bottom: none;
+}
+.qhit:hover {
+  background: var(--surface-0, #f5f5f2);
+}
+.qhit small {
+  display: block;
+  color: var(--on-surface-muted, #6b6b63);
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+}
+
+#q-results .empty {
+  padding: 10px 14px;
+  color: var(--on-surface-muted, #6b6b63);
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+}

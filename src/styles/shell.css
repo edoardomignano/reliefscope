@@ -131,3 +131,29 @@
     display: block;
   }
 }
+
+/* ---------- Rechtliches-Aufklapper (Mehr) ---------- */
+details.legal {
+  background: var(--surface-1, #fff);
+  border: 1px solid var(--border, #e4e3dd);
+  border-radius: var(--rounded-md, 12px);
+  padding: var(--space-md, 12px);
+}
+details.legal summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-accent, #9a5a0b);
+}
+details.legal .lic {
+  margin: 8px 0 0;
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+  color: var(--on-surface-muted, #6b6b63);
+}
+details.legal .warn-text {
+  margin: 10px 0 0;
+  font: var(--font-caption, 400 12px/1.4 system-ui, sans-serif);
+  color: var(--error, #b4291d);
+  background: var(--bg-error, #f9e7e5);
+  border-radius: var(--rounded-sm, 8px);
+  padding: 8px 10px;
+}
