@@ -8,6 +8,8 @@ import './styles/sheet.css';
 import './styles/layers.css';
 import './styles/search.css';
 import './styles/ortcheck.css';
+import './styles/field.css';
+import './styles/toast.css';
 
 import { initMap } from './map/map';
 import { mountDefaultLayers } from './map/layers';
@@ -19,6 +21,9 @@ import { initAttribution } from './ui/attribution';
 import { initTabs } from './ui/tabs';
 import { initSheet } from './ui/sheet';
 import { initFabs } from './ui/fabs';
+import { initGps } from './geo/gps';
+import { initTrack } from './features/track';
+import { initZone } from './features/zone';
 
 function start(): void {
   const map = initMap('map');
@@ -35,6 +40,11 @@ function start(): void {
   initTabs();
   initSheet();
   initFabs();
+
+  // Feld-Modus (nach initFabs — GPS dockt am ⌖-FAB an)
+  initGps();
+  initTrack();
+  initZone();
 
   if (import.meta.env.DEV) {
     (window as unknown as Record<string, unknown>).__map = map;

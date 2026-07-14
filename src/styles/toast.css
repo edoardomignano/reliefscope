@@ -1,0 +1,37 @@
+/* Meldungen (Voice & Tone). */
+#toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  max-width: min(520px, 92vw);
+  padding: 10px 16px;
+  border-radius: var(--rounded-md, 12px);
+  background: var(--field-surface-1, #1c1f24);
+  color: var(--field-on-surface, #e7e9ec);
+  font: var(--font-body, 400 15px/1.5 system-ui, sans-serif);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast-error {
+  background: var(--error, #b4291d);
+  color: var(--on-error, #fff);
+}
+.toast-success {
+  background: var(--success, #2f7d4f);
+  color: var(--on-success, #fff);
+}
