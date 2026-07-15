@@ -32,6 +32,8 @@ interface GpsState {
   circle: L.Circle | null;
   startTs: number | null;
   last: GpsFix | null;
+  /** Position, auf die zuletzt zentriert wurde — nachführen nur bei echter Bewegung. */
+  centerFix: GpsFix | null;
   sessionDist: number;
   hudTimer: number | null;
   wake: WakeLockSentinel | null;
@@ -43,10 +45,18 @@ const gps: GpsState = {
   circle: null,
   startTs: null,
   last: null,
+  centerFix: null,
   sessionDist: 0,
   hudTimer: null,
   wake: null,
 };
+
+/**
+ * Erst nachführen, wenn die Position sich um mehr als so viele Meter vom letzten
+ * Zentrier-Punkt entfernt hat. Verhindert, dass GPS-Jitter im Stand die Karte
+ * (und 4 WMS-Overlays) ununterbrochen neu lädt → spart Akku/Hitze massiv.
+ */
+const RECENTER_M = 12;
 
 export function isTracking(): boolean {
   return gps.watch !== null;
@@ -96,7 +106,10 @@ function toggleFromFab(): void {
   if (!isTracking()) start();
   else if (!gps.follow) {
     gps.follow = true;
-    if (gps.last) getMap().setView([gps.last.lat, gps.last.lng], Math.max(getMap().getZoom(), 16));
+    if (gps.last) {
+      getMap().setView([gps.last.lat, gps.last.lng], Math.max(getMap().getZoom(), 16));
+      gps.centerFix = gps.last;
+    }
     updateFab();
   } else stop();
 }
@@ -117,6 +130,7 @@ function start(): void {
   gps.startTs = Date.now();
   gps.sessionDist = 0;
   gps.last = null;
+  gps.centerFix = null;
   showHud(true);
   hudTick();
   gps.hudTimer = window.setInterval(hudTick, 1000);
@@ -138,6 +152,7 @@ export function stop(): void {
   if (gps.circle) map.removeLayer(gps.circle);
   gps.marker = gps.circle = null;
   gps.last = null;
+  gps.centerFix = null;
   gps.startTs = null;
   if (gps.hudTimer) window.clearInterval(gps.hudTimer);
   gps.hudTimer = null;
@@ -175,7 +190,17 @@ function onPosition(pos: GeolocationPosition): void {
     gps.marker.setLatLng([fix.lat, fix.lng]);
     gps.circle?.setLatLng([fix.lat, fix.lng]).setRadius(fix.accuracy);
   }
-  if (gps.follow) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 16), { animate: false });
+  // Nachführen nur bei echter Bewegung (> RECENTER_M) — der blaue Punkt folgt immer
+  // (billig), aber die Karte lädt nicht bei jedem GPS-Jitter neu (spart Hitze/Akku).
+  if (gps.follow) {
+    const moved =
+      !gps.centerFix ||
+      distanceM(gps.centerFix.lat, gps.centerFix.lng, fix.lat, fix.lng) > RECENTER_M;
+    if (moved) {
+      map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 16), { animate: false });
+      gps.centerFix = fix;
+    }
+  }
 
   updateHudLive(fix.accuracy);
   for (const cb of listeners) cb(fix);
