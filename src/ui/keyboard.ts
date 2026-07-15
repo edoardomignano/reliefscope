@@ -11,22 +11,30 @@ function toggleLayer(id: string): void {
   cb?.click(); // feuert das change-Handling in layerControls → Karte + Panel synchron
 }
 
-function isTyping(t: EventTarget | null): boolean {
-  const el = t as HTMLElement | null;
-  if (!el) return false;
-  return (
-    el.tagName === 'INPUT' ||
-    el.tagName === 'TEXTAREA' ||
-    el.tagName === 'SELECT' ||
-    el.isContentEditable
-  );
+// Interaktive Elemente nutzen Space/Enter selbst (Button auslösen, Checkbox, Link,
+// Formularfeld). Die Blink-Analyse darf diese Tasten NICHT kapern — sonst kann ein
+// Tastatur-Nutzer fokussierte Bedienelemente nicht mehr auslösen (A11y-Regression).
+function isInteractive(el: Element | null): boolean {
+  if (!el || !(el instanceof HTMLElement)) return false;
+  if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'OPTION'].includes(el.tagName)) return true;
+  if (el.tagName === 'A' && el.hasAttribute('href')) return true;
+  if (el.isContentEditable) return true;
+  if (el.hasAttribute('tabindex')) return true;
+  const role = el.getAttribute('role');
+  return role === 'button' || role === 'checkbox' || role === 'link' || role === 'menuitem';
+}
+
+/** Kürzel nur auslösen, wenn KEIN interaktives Element im Fokus/Ziel ist. */
+function shouldHandle(e: KeyboardEvent): boolean {
+  if (e.ctrlKey || e.metaKey || e.altKey) return false;
+  return !isInteractive(e.target as Element) && !isInteractive(document.activeElement);
 }
 
 export function initKeyboard(): void {
   document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
+    if (!shouldHandle(e)) return;
     if (e.key === ' ' || e.code === 'Space') {
-      e.preventDefault();
+      e.preventDefault(); // sonst scrollt die Seite
       toggleLayer('relief');
     } else if (e.key === 'h' || e.key === 'H') {
       toggleLayer('uraufnahme');

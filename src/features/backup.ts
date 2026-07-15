@@ -100,7 +100,7 @@ async function mergeBackup(data: Backup): Promise<number> {
   let added = 0;
 
   const haveFinds = new Set((await allFinds()).map((f) => f.id));
-  for (const f of data.finds) {
+  for (const f of data.finds ?? []) {
     if (haveFinds.has(f.id)) continue;
     const photo = f.photo ? await dataUrlToBlob(f.photo) : null;
     await putFind({ ...f, photo });
