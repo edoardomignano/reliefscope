@@ -22,7 +22,11 @@ else
   (cd .deploy-worktree && git checkout --orphan gh-pages && git rm -rf --quiet . 2>/dev/null || true)
 fi
 
-rsync -a --delete --exclude '.git' dist/ .deploy-worktree/
+# --checksum: nach INHALT vergleichen, nicht Größe+mtime. Kritisch, weil sw.js bei
+# jedem Build gleich groß ist (nur die 8-Zeichen-Asset-Hashes ändern sich) und
+# frisch gebaut ~dieselbe mtime hat — rsync würde die neue sw.js sonst überspringen
+# und das live sw.js precacht tote Asset-Namen (404 → Auto-Update blockiert).
+rsync -a --checksum --delete --exclude '.git' dist/ .deploy-worktree/
 (
   cd .deploy-worktree
   git add -A
