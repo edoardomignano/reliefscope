@@ -4,8 +4,6 @@ import 'leaflet/dist/leaflet.css';
 /** Bayern-Mitte als Start (ganz Bayern im Blick). */
 const BAYERN_CENTER: L.LatLngTuple = [48.95, 11.5];
 const START_ZOOM = 7;
-/** Karte auf Bayern begrenzen (+ etwas Rand) — kein Weltkarten-Laden, klarer Fokus. */
-const BAYERN_BOUNDS = L.latLngBounds([47.1, 8.7], [50.7, 14.1]);
 
 let map: L.Map | null = null;
 
@@ -17,13 +15,13 @@ let map: L.Map | null = null;
 export function initMap(containerId = 'map'): L.Map {
   if (map) return map;
 
+  // Start in Bayern, aber KEINE Bounds/minZoom-Sperre: Wer außerhalb Bayerns (übriges
+  // Deutschland/Ausland) sondelt, kann die OSM-Weltkarte nutzen und seine Funde/Spur
+  // tracken. Die amtlichen Bayern-Ebenen (Denkmal/Relief) bleiben dort einfach leer.
   map = L.map(containerId, {
     center: BAYERN_CENTER,
     zoom: START_ZOOM,
-    minZoom: 6, // nicht weiter rauszoomen als „ganz Bayern" → keine Welt-Kacheln
     maxZoom: 20,
-    maxBounds: BAYERN_BOUNDS,
-    maxBoundsViscosity: 1, // hart an der Bayern-Grenze halten
     zoomControl: true,
   });
 
