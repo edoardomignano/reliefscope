@@ -8,7 +8,11 @@ import { ATTRIBUTION } from '../config/datasources';
 export function initAttribution(): void {
   const host = document.querySelector<HTMLElement>('[data-tab="mehr"] #mehr-content');
   if (!host) return;
-  host.innerHTML = `
+  // Anhängen statt Überschreiben: „Mehr" wird von help → backup → attribution
+  // der Reihe nach befüllt (initHelp leert den Container einmal zu Beginn).
+  const card = document.createElement('section');
+  card.className = 'mehr-card';
+  card.innerHTML = `
     <details class="legal" open>
       <summary>Rechtliches &amp; Lizenzen</summary>
       <p class="lic">${ATTRIBUTION.bvv}</p>
@@ -19,4 +23,5 @@ export function initAttribution(): void {
         Sachbeschädigung. Funde sind meldepflichtig (Art.&nbsp;8 BayDSchG); seit 1.7.2023
         gilt in Bayern das Schatzregal.</p>
     </details>`;
+  host.appendChild(card);
 }

@@ -1,0 +1,109 @@
+/* „Mehr"-Tab: Hilfe, Installation, Backup, Rechtliches (Phase 5). */
+#mehr-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4, 16px);
+}
+
+.mehr-card h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+.mehr-card h3:not(:first-child) {
+  margin-top: 14px;
+}
+.mehr-card .muted {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.mehr-card details.info,
+.mehr-card details.legal {
+  border: 1px solid var(--line, #d9d6cf);
+  border-radius: var(--radius-md, 12px);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.mehr-card summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.guide {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.ok-text {
+  color: var(--ok, #2f7d4f);
+  font-weight: 600;
+  font-size: 0.86rem;
+  margin: 0;
+}
+.warn-text {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--warn-ink, #8a5a00);
+  margin: 10px 0 0;
+}
+
+/* Ziel-Größe ≥ 44 px für alle Aktionsknöpfe im Mehr-Tab (A11y, TASK-052). */
+.mehr-card .btn-primary,
+.mehr-card .btn-secondary {
+  min-height: 44px;
+  width: 100%;
+}
+.mehr-card .row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+#install-box {
+  margin-top: 4px;
+}
+.muted.small {
+  font-size: 0.78rem;
+  margin: 6px 0 0;
+  text-align: center;
+}
+.install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+.ig-device {
+  border: 1px solid var(--line, #d9d6cf);
+  border-radius: var(--radius-md, 12px);
+  padding: 10px 12px 10px 14px;
+}
+.ig-head {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+.ig-device ol {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+/* Hilfe-Modus: Cursor signalisiert „antippen erklärt", nichts löst aus. */
+body.help-mode #map,
+body.help-mode #panel {
+  cursor: help;
+}
+body.help-mode #help-mode-btn.active {
+  outline: 2px solid var(--accent, #f0a53a);
+}

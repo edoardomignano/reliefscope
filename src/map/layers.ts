@@ -109,7 +109,11 @@ export const LAYER_DEFS: LayerDef[] = [
     id: 'boden',
     name: 'Bodendenkmäler',
     kind: 'overlay',
-    on: true, // FR-001: alle 4 Denkmal-Kategorien default AN
+    // Nur die rechtlich entscheidende Ebene ist default AN. Bau/Ensemble/Landschaft
+    // standardmäßig AUS — 4 gleichzeitige WMS-Overlays machten den Start langsam.
+    // Alle bleiben im Ebenen-Panel einzeln zuschaltbar (der Ort-Check prüft ohnehin
+    // alle Kategorien unabhängig von der Sichtbarkeit).
+    on: true,
     opacity: 0.6,
     info: 'Nur hier gilt das Sondenverbot (Art. 7 Abs. 6 BayDSchG).',
     attribution: WMS.denkmal.attribution,
@@ -120,7 +124,7 @@ export const LAYER_DEFS: LayerDef[] = [
     id: 'bau',
     name: 'Baudenkmäler',
     kind: 'overlay',
-    on: true,
+    on: false,
     opacity: 0.6,
     info: 'Einzelne Baudenkmäler (z. B. das Festspielhaus). Kein Sondenverbot.',
     attribution: WMS.denkmal.attribution,
@@ -130,7 +134,7 @@ export const LAYER_DEFS: LayerDef[] = [
     id: 'ensemble',
     name: 'Ensembles',
     kind: 'overlay',
-    on: true,
+    on: false,
     opacity: 0.6,
     info: 'Denkmalgeschützte Ensembles (Ortsbilder).',
     attribution: WMS.denkmal.attribution,
@@ -141,7 +145,7 @@ export const LAYER_DEFS: LayerDef[] = [
     id: 'landschaft',
     name: 'Landschaftsprägende Denkmäler',
     kind: 'overlay',
-    on: true,
+    on: false,
     opacity: 0.6,
     info: 'Besonders landschaftsprägende Denkmäler.',
     attribution: WMS.denkmal.attribution,

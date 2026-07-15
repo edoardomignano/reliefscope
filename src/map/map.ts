@@ -15,6 +15,9 @@ let map: L.Map | null = null;
 export function initMap(containerId = 'map'): L.Map {
   if (map) return map;
 
+  // Start in Bayern, aber KEINE Bounds/minZoom-Sperre: Wer außerhalb Bayerns (übriges
+  // Deutschland/Ausland) sondelt, kann die OSM-Weltkarte nutzen und seine Funde/Spur
+  // tracken. Die amtlichen Bayern-Ebenen (Denkmal/Relief) bleiben dort einfach leer.
   map = L.map(containerId, {
     center: BAYERN_CENTER,
     zoom: START_ZOOM,

@@ -1,0 +1,82 @@
+/* Erststart-Onboarding (TASK-050). Vollflächiges Overlay, mobil-first. */
+#onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(28, 26, 22, 0.62);
+  backdrop-filter: blur(3px);
+  animation: ob-fade 0.25s ease;
+}
+#onboarding.closing {
+  animation: ob-fade 0.25s ease reverse;
+}
+@keyframes ob-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ob-card {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface, #fbfaf7);
+  border-radius: var(--radius-lg, 16px);
+  padding: 30px 24px 22px;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+}
+.ob-skip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--muted, #8a857c);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 6px;
+}
+.ob-emoji {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.ob-title {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+}
+.ob-body {
+  margin: 0 0 22px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink, #2b2924);
+}
+.ob-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.ob-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line, #d9d6cf);
+  transition: background 0.2s;
+}
+.ob-dots span.on {
+  background: var(--accent, #f0a53a);
+}
+.ob-next {
+  min-height: 48px;
+  width: 100%;
+  font-size: 1rem;
+}
