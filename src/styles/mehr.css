@@ -67,6 +67,37 @@
 #install-box {
   margin-top: 4px;
 }
+.muted.small {
+  font-size: 0.78rem;
+  margin: 6px 0 0;
+  text-align: center;
+}
+.install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+.ig-device {
+  border: 1px solid var(--line, #d9d6cf);
+  border-radius: var(--radius-md, 12px);
+  padding: 10px 12px 10px 14px;
+}
+.ig-head {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+.ig-device ol {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
 
 /* Hilfe-Modus: Cursor signalisiert „antippen erklärt", nichts löst aus. */
 body.help-mode #map,

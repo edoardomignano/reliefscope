@@ -79,33 +79,47 @@ function isStandalone(): boolean {
     (navigator as unknown as { standalone?: boolean }).standalone === true
   );
 }
-function isIos(): boolean {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+/** Einfacher Handy-Leitfaden — beide Geräte immer sichtbar, damit niemand an einer
+ *  fehlerhaften Geräte-Erkennung (In-App-Browser, iPad) scheitert. */
+function guideHtml(): string {
+  return `
+    <div class="install-guide">
+      <div class="ig-device">
+        <span class="ig-head">📱 iPhone (in Safari)</span>
+        <ol>
+          <li>Unten auf das <b>Teilen-Symbol</b> tippen — das Quadrat mit dem Pfeil nach oben ⬆️.</li>
+          <li>Etwas nach unten wischen, <b>„Zum Home-Bildschirm"</b> antippen.</li>
+          <li>Oben rechts <b>„Hinzufügen"</b>.</li>
+        </ol>
+      </div>
+      <div class="ig-device">
+        <span class="ig-head">🤖 Android (in Chrome)</span>
+        <ol>
+          <li>Oben rechts auf die <b>drei Punkte ⋮</b> tippen.</li>
+          <li><b>„App installieren"</b> antippen.</li>
+        </ol>
+      </div>
+    </div>`;
 }
 
 function renderInstall(): void {
   const box = document.getElementById('install-box');
   if (!box) return;
   if (isStandalone()) {
-    box.innerHTML = `<p class="ok-text">✓ Läuft bereits als installierte App.</p>`;
+    box.innerHTML = `<p class="ok-text">✓ Erledigt — ReliefScope liegt schon auf deinem Startbildschirm.</p>`;
     return;
   }
+  // Wenn der Browser den Ein-Tipp-Weg anbietet (meist Android): großer Knopf zuerst.
+  let top = '';
   if (deferredPrompt) {
-    box.innerHTML = `<button type="button" id="install-btn" class="btn-primary">Als App installieren</button>`;
-    box.querySelector('#install-btn')?.addEventListener('click', () => {
-      deferredPrompt?.prompt();
-      deferredPrompt = null;
-    });
-    return;
+    top = `<button type="button" id="install-btn" class="btn-primary">📲 Jetzt aufs Handy legen</button>
+      <p class="muted small">Ein Tipp genügt — oder folge der Anleitung unten.</p>`;
   }
-  if (isIos()) {
-    box.innerHTML = `<p class="muted">Auf dem iPhone: unten auf <b>Teilen</b> ⬆️ tippen →
-      <b>„Zum Home-Bildschirm"</b>. Dann startet ReliefScope wie eine echte App und
-      funktioniert offline.</p>`;
-    return;
-  }
-  box.innerHTML = `<p class="muted">Öffne das Browser-Menü und wähle
-    <b>„App installieren"</b> bzw. <b>„Zum Startbildschirm hinzufügen"</b>.</p>`;
+  box.innerHTML = top + guideHtml();
+  box.querySelector('#install-btn')?.addEventListener('click', () => {
+    deferredPrompt?.prompt();
+    deferredPrompt = null;
+  });
 }
 
 export function initHelp(): void {
@@ -131,9 +145,10 @@ export function initHelp(): void {
     </details>
     <button type="button" id="help-mode-btn" class="btn-secondary">Hilfe-Modus (antippen erklärt)</button>
 
-    <h3>Installation</h3>
-    <p class="muted">Installiert startet ReliefScope schneller, im Vollbild und
-      funktioniert offline in bereits besuchten Gebieten.</p>
+    <h3>ReliefScope aufs Handy legen</h3>
+    <p class="muted">Dann hast du es wie eine ganz normale App: ein Tipp auf das Symbol
+      auf deinem Startbildschirm — kein Browser-Suchen. Und die Karten funktionieren
+      auch draußen ohne Internet.</p>
     <div id="install-box"></div>`;
   host.appendChild(card);
 
